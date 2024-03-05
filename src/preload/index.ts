@@ -33,6 +33,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.removeAllListeners('receive-clipboard-data');
   },
 });
+contextBridge.exposeInMainWorld('electronAPI', {
+  closeMainWindow: () => ipcRenderer.send('close-main-window')
+});
 
 
 

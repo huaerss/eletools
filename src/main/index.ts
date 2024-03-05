@@ -11,6 +11,7 @@ function createWindow(): void {
     height: 100,
     show: false,
     alwaysOnTop: true,
+    // frame: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
@@ -25,6 +26,10 @@ function createWindow(): void {
     console.log('copiedText', copiedText)
     mainWindow.webContents.send('receive-clipboard-data', copiedText);
   });
+  ipcMain.on('close-main-window', () => {
+    mainWindow.close();
+  });
+
   ipcMain.handle('perform-request', async (event, arg) => {
     console.log('arg', arg)
     const response = await axios.post('https://translates.me/v2/translate', arg.data,
@@ -32,7 +37,6 @@ function createWindow(): void {
     return response.data;
 
   });
-
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -68,7 +72,6 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
-
 
 
   createWindow()
