@@ -2,12 +2,7 @@
 import { reactive, ref, onMounted, onUnmounted } from 'vue'
 
 const clipboardData = ref('');
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') {
-    // 当按下ESC时，发送事件到主进程以关闭窗口
-    window.electronAPI.closeMainWindow();
-  }
-});
+
 
 onMounted(() => {
   window.electronAPI.onClipboardDataReceived(async (res) => {
@@ -40,4 +35,3 @@ onUnmounted(() => {
 <template>
   翻译结果: {{ clipboardData }}
 </template>
-

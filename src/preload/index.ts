@@ -17,10 +17,6 @@ function handleRightClick() {
   }, 500);
 
 
-
-
-
-
 }
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -33,9 +29,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.removeAllListeners('receive-clipboard-data');
   },
 });
-contextBridge.exposeInMainWorld('electronAPI', {
-  closeMainWindow: () => ipcRenderer.send('close-main-window')
-});
+// contextBridge.exposeInMainWorld('electronAPI', {
+//   closeMainWindow: () => ipcRenderer.send('close-main-window')
+// });
 
 
 
@@ -46,6 +42,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
 uIOhook.on('mousedown', (e) => {
   if (e.button === 2) {
+    //  并且按下的时间
     handleRightClick()
   }
 });

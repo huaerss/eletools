@@ -1,7 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
 const axios = require('axios');
 
 function createWindow(): void {
@@ -13,7 +12,6 @@ function createWindow(): void {
     alwaysOnTop: true,
     // frame: false,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       sandbox: false,
       nodeIntegration: true,
@@ -22,16 +20,13 @@ function createWindow(): void {
 
     }
   })
-  ipcMain.on('clipboard', (event, copiedText) => {
+  ipcMain.on('clipboard', (_, copiedText) => {
     console.log('copiedText', copiedText)
     mainWindow.webContents.send('receive-clipboard-data', copiedText);
   });
-  ipcMain.on('close-main-window', () => {
-    mainWindow.close();
-  });
 
-  ipcMain.handle('perform-request', async (event, arg) => {
-    console.log('arg', arg)
+
+  ipcMain.handle('perform-request', async (_, arg) => {
     const response = await axios.post('https://translates.me/v2/translate', arg.data,
       arg.Headers);
     return response.data;
