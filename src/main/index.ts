@@ -2,23 +2,37 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+const axios = require('axios');
 
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 500,
+    height: 100,
     show: false,
+    alwaysOnTop: true,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       sandbox: false,
       nodeIntegration: true,
-      // contextIsolation: true,
+      contextIsolation: true,
       preload: join(__dirname, '../preload/index.js'),
 
     }
   })
+  ipcMain.on('clipboard', (event, copiedText) => {
+    console.log('copiedText', copiedText)
+    mainWindow.webContents.send('receive-clipboard-data', copiedText);
+  });
+  ipcMain.handle('perform-request', async (event, arg) => {
+    console.log('arg', arg)
+    const response = await axios.post('https://translates.me/v2/translate', arg.data,
+      arg.Headers);
+    return response.data;
+
+  });
+
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -60,8 +74,6 @@ app.whenReady().then(() => {
   createWindow()
 
   app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })

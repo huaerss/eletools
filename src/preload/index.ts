@@ -1,4 +1,4 @@
-import { contextBridge, clipboard, ipcRenderer,contextBridge } from 'electron'
+import { contextBridge, clipboard, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { uIOhook } from 'uiohook-napi'
 const { keyboard, Key } = require("@nut-tree/nut-js");
@@ -6,17 +6,33 @@ const { keyboard, Key } = require("@nut-tree/nut-js");
 
 async function performCopy() {
   await keyboard.pressKey(Key.LeftControl, Key.C);
-  await keyboard.releaseKey(Key.LeftControl, Key.C);
+  keyboard.releaseKey(Key.LeftControl, Key.C);
+
 }
 function handleRightClick() {
-  performCopy();
+  performCopy()
   setTimeout(() => {
     const copiedText = clipboard.readText();
-
-    console.log('右键按下');
-
+    ipcRenderer.send('clipboard', copiedText);
   }, 500);
+
+
+
+
+
+
 }
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  onClipboardDataReceived: (callback) => {
+    ipcRenderer.on('receive-clipboard-data', (_, data) => callback(data));
+
+
+  },
+  removeClipboardDataListener: () => {
+    ipcRenderer.removeAllListeners('receive-clipboard-data');
+  },
+});
 
 
 
@@ -28,28 +44,6 @@ function handleRightClick() {
 uIOhook.on('mousedown', (e) => {
   if (e.button === 2) {
     handleRightClick()
-
-
-
-    // const data = {
-    //   text: [copiedText],
-    // };
-
-    // axios.post('https://translates.me/v2/translate', data, {
-    //   headers: {
-    //     'Content-Type': 'application/json'
-    //   }
-    // })
-    //   .then(response => {
-    //     console.log("翻译后的内容:", response.data.data); // 输出翻译的结果
-    //   })
-    //   .catch(error => {
-    //     console.error('An error occurred:', error);
-    //   });
-
-
-
-
   }
 });
 
@@ -80,8 +74,7 @@ const api = {
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('electronAPI', api);
-    contextBridge.exposeInMainWorld('uIOhook', uIOhook)
+    contextBridge.exposeInMainWorld('api', api);
 
 
   } catch (error) {

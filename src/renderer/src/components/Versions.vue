@@ -1,21 +1,36 @@
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, onUnmounted } from 'vue'
+
+const clipboardData = ref('');
+
 onMounted(() => {
-  console.log('ipcRenderer', window.ipcRenderer)
+  window.electronAPI.onClipboardDataReceived(async (res) => {
+    if (typeof (res) === 'string') {
+      const result = await window.electron.ipcRenderer.invoke('perform-request', {
+        data: {
+          text: [res],
+          "target_lang": "ZH"
+        },
+        Headers: {
+          "Content-Type": "application/json"
+        }
+      });
+      console.log("翻译结果:", result);
+      clipboardData.value = result.data;
 
-})
 
 
+    }
 
+  });
+});
 
+onUnmounted(() => {
+  window.electronAPI.removeClipboardDataListener();
+});
 
-const versions = reactive({ ...window.electron.process.versions })
 </script>
 
 <template>
-  <ul class="versions">
-    <li class="electron-version">Electron v{{ versions.electron }}</li>
-    <li class="chrome-version">Chromium v{{ versions.chrome }}</li>
-    <li class="node-version">Node v{{ versions.node }}</li>
-  </ul>
+  翻译结果: {{ clipboardData }}
 </template>
