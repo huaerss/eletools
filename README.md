@@ -32,3 +32,8 @@ $ pnpm build:mac
 # For Linux
 $ pnpm build:linux
 ```
+
+### 使用nutjs实现自动化操作 以及使用uihook 实现事件监听 
+
+
+
