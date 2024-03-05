@@ -12,9 +12,11 @@ function createWindow(): void {
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
+      nodeIntegration: true,
       // contextIsolation: true,
+      preload: join(__dirname, '../preload/index.js'),
+
     }
   })
 
@@ -52,6 +54,8 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+
 
   createWindow()
 

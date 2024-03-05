@@ -24,6 +24,7 @@
     "@electron-toolkit/preload": "^3.0.0",
     "@electron-toolkit/utils": "^3.0.0",
     "@nut-tree/nut-js": "^4.0.0",
+    "axios": "^1.6.7",
     "deasync": "^0.1.29",
     "electron-updater": "^6.1.7",
     "uiohook-napi": "^1.5.3"

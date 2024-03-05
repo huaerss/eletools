@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
+onMounted(() => {
+  console.log('ipcRenderer', window.ipcRenderer)
+
+})
+
+
+
+
 
 const versions = reactive({ ...window.electron.process.versions })
 </script>
