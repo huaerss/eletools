@@ -1,4 +1,4 @@
-import { contextBridge, clipboard } from 'electron'
+import { contextBridge, clipboard, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { uIOhook } from 'uiohook-napi'
 const { keyboard, Key } = require("@nut-tree/nut-js");
@@ -27,7 +27,10 @@ uIOhook.on('mousedown', (e) => {
       }
     )
     setTimeout(() => {
-      console.log('复制到的内容为:', clipboard.readText())
+      const copiedText = clipboard.readText();
+       
+
+
 
     }, 500);
 
@@ -40,7 +43,6 @@ uIOhook.on('mouseup', (e) => {
     clearTimeout(rightMouseTimer);
     rightMouseTimer = null; // 重置定时器变量
     const duration = Date.now() - rightMouseDownTime;
-    console.log(`右键按下了${duration} ms`);
     // 重置按下的时间
     rightMouseDownTime = 0;
   }
@@ -62,6 +64,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', api)
     contextBridge.exposeInMainWorld('uIOhook', uIOhook)
+
 
   } catch (error) {
     console.error(error)

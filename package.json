@@ -26,7 +26,6 @@
     "@nut-tree/nut-js": "^4.0.0",
     "deasync": "^0.1.29",
     "electron-updater": "^6.1.7",
-    "robotjs": "^0.6.0",
     "uiohook-napi": "^1.5.3"
   },
   "devDependencies": {

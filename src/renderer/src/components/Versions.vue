@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { reactive, onMounted } from 'vue'
-
+import { reactive } from 'vue'
 
 const versions = reactive({ ...window.electron.process.versions })
 </script>
