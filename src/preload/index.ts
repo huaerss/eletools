@@ -3,7 +3,9 @@ import { electronAPI } from '@electron-toolkit/preload'
 import { uIOhook } from 'uiohook-napi'
 const { keyboard, Key } = require("@nut-tree/nut-js");
 
-
+contextBridge.exposeInMainWorld('closeAPI', {
+  closeWindow: () => ipcRenderer.send('close-window')
+});
 async function performCopy() {
   await keyboard.pressKey(Key.LeftControl, Key.C);
   keyboard.releaseKey(Key.LeftControl, Key.C);

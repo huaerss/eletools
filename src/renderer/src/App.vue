@@ -4,10 +4,8 @@ import Versions from './components/Versions.vue'
 </script>
 
 <template>
-  <div class="draggable">
-    <Versions />
+  <Versions />
 
-  </div>
 </template>
 
 <style>
@@ -18,7 +16,7 @@ import Versions from './components/Versions.vue'
 
 .draggable {
   -webkit-app-region: drag;
-  height: 100;
+  height: 200;
   width: 500;
 }
 </style>

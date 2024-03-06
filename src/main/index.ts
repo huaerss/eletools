@@ -1,16 +1,17 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, globalShortcut } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 const axios = require('axios');
+app.on('ready', createWindow);
 
 function createWindow(): void {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  let mainWindow = new BrowserWindow({
     width: 500,
-    height: 100,
+    height: 80,
     show: false,
     alwaysOnTop: true,
-    // frame: false,
+    frame: false,
     autoHideMenuBar: true,
     webPreferences: {
       sandbox: false,
@@ -21,10 +22,11 @@ function createWindow(): void {
     }
   })
   ipcMain.on('clipboard', (_, copiedText) => {
-    console.log('copiedText', copiedText)
     mainWindow.webContents.send('receive-clipboard-data', copiedText);
   });
-
+  ipcMain.on('close-window', () => {
+    mainWindow.close();
+  });
 
   ipcMain.handle('perform-request', async (_, arg) => {
     const response = await axios.post('https://translates.me/v2/translate', arg.data,
@@ -69,7 +71,6 @@ app.whenReady().then(() => {
   ipcMain.on('ping', () => console.log('pong'))
 
 
-  createWindow()
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
