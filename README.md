@@ -33,7 +33,7 @@ $ pnpm build:mac
 $ pnpm build:linux
 ```
 
-### 使用[nutjs ]([nutjs.dev](https://nutjs.dev/))代替robotjs实现自动化操作
+### 使用[[nutjs ]([nutjs.dev](https://nutjs.dev/)))代替robotjs实现自动化操作
 
 ### 使用[[*uiohook*-napi](https://github.com/SnosMe/uiohook-napi))代替iohook 实现事件监听
 
@@ -51,3 +51,8 @@ $ pnpm build:linux
 
 ### 3.tools中显示对应的翻译的句子
 
+
+
+## 使用截图说明
+
+![image-20240306134013195](README.assets/image-20240306134013195.png)
