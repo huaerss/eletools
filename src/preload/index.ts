@@ -36,27 +36,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
 
 
-// let rightMouseDownTime = 0;
-// let rightMouseTimer; // 用于存储定时器 ID
-
+let rightMouseDownTimer: any = null;
 
 uIOhook.on('mousedown', (e) => {
   if (e.button === 2) {
-    //  并且按下的时间
-    handleRightClick()
+    // 开始计时是否达到250ms
+    rightMouseDownTimer = setTimeout(handleRightClick, 250);
   }
 });
 
-// uIOhook.on('mouseup', (e) => {
-//   if (e.button === 2) {
-//     // 如果鼠标右键提起，清除定时器
-//     clearTimeout(rightMouseTimer);
-//     rightMouseTimer = null; // 重置定时器变量
-//     const duration = Date.now() - rightMouseDownTime;
-//     // 重置按下的时间
-//     rightMouseDownTime = 0;
-//   }
-// });
+uIOhook.on('mouseup', (e) => {
+  if (e.button === 2) {
+    // 清除计时器
+    if (rightMouseDownTimer) {
+      clearTimeout(rightMouseDownTimer);
+      rightMouseDownTimer = null;
+    }
+  }
+});
 
 
 
