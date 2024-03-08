@@ -8,7 +8,7 @@ function createWindow(): void {
   // Create the browser window.
   let mainWindow = new BrowserWindow({
     width: 500,
-    height: 80,
+    height: 100,
     show: false,
     alwaysOnTop: true,
     frame: false,
@@ -32,10 +32,22 @@ function createWindow(): void {
     const response = await axios.post('https://translates.me/v2/translate', arg.data,
       arg.Headers);
     return response.data;
-
+  });
+  ipcMain.handle('GPT', async (_, arg) => {
+    try {
+      const response = await axios.post('https://api.double.bot/api/v1/chat', arg.data, {
+        headers: arg.headers // Change to lowercase
+      });
+      return response.data; // Return only the data property
+    } catch (error) {
+      // console.error('Error in GPT IPC:', error);
+      throw error;
+    }
   });
 
   mainWindow.on('ready-to-show', () => {
+    // 打开开发者工具
+    // mainWindow.webContents.openDevTools()
     mainWindow.show()
   })
 
