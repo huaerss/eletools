@@ -29,7 +29,7 @@ function createWindow(): void {
   });
 
   ipcMain.handle('perform-request', async (_, arg) => {
-    const response = await axios.post('https://translates.me/v2/translate', arg.data,
+    const response = await axios.post('https://api.deeplx.org/translate', arg.data,
       arg.Headers);
     return response.data;
   });
