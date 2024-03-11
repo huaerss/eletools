@@ -33,18 +33,17 @@ function createWindow(): void {
       arg.Headers);
     return response.data;
   });
-  ipcMain.handle('GPT', async (_, arg) => {
+  ipcMain.handle('GPT', async (event, arg) => {
     try {
-      const response = await axios.post('https://api.double.bot/api/v1/chat', arg.data, {
-        headers: arg.headers // Change to lowercase
+      const response = await axios.post('https://demo.gyhtop.top:7177/v1/chat/completions', arg.data, {
+        headers: arg.headers,
       });
-      return response.data; // Return only the data property
+      return response.data.choices[0].message.content;
+
     } catch (error) {
-      // console.error('Error in GPT IPC:', error);
-      throw error;
+      event.sender.send('GPT-stream-error', error);
     }
   });
-
   mainWindow.on('ready-to-show', () => {
     // 打开开发者工具
     // mainWindow.webContents.openDevTools()

@@ -29,34 +29,28 @@ onMounted(() => {
   window.electronAPI.onClipboardDataReceived(async (res) => {
     clipboardData.value = '翻译中...'
     gptcontentvalue.value = "查询中..."
+    // 翻译接口
     const result = await window.electron.ipcRenderer.invoke('perform-request', {
       data: {
         text: res,
         "target_lang": "ZH"
       },
-      Headers: {
-        "Content-Type": "application/json"
-      }
     });
     clipboardData.value = result.data;
-
+    // GPT接口
     const gptcontent = await window.electron.ipcRenderer.invoke('GPT', {
       data: {
-        "api_key": 'api_qUjQQfNMhMnCqnqLnFcg',
-        "messages": [
-          {
-            "role": "user",
-            "message": `我问你所有问题你都需要中文回复我并且不需要输出你理解的代码,相关问题也要进行回答并可以回答我里面的表达是什么意思,你不需要回复我好的,你只需要回复我问的问题,那我的问题是:${res}`,
-            "codeContexts": []
-          }
-        ],
-        "chat_model": "GPT4 Turbo"
+        model: "gpt-4",
+        messages: [
+          { role: "system", content: "你的回答只能总结,回答压缩答案,最大不超过80字中文字以内,并且所有回答尽量是中文混合一些术语英文" },
+          { role: "user", content: res }
+        ]
       },
       headers: {
-        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzJkTTN5Q3BlVFlKejBGZXVNWlZQUDdGTlppdCIsImV4cCI6MTcwOTgwNTE5NH0.VI-Fyx8nyArSZX5SSjnxolWIxn2ZSFF2jRdDW4548YI`,
         'Content-Type': 'application/json'
       }
     });
+    console.log(gptcontent)
     gptcontentvalue.value = gptcontent
 
 
@@ -75,7 +69,7 @@ onUnmounted(() => {
 
     <p>{{ clipboardData }}</p>
     <div v-if="gptcontentvalue" style="border-top:  1px solid crimson;margin-top: 10px;">
-      <h3 style="font-size: 10px;">GPT4.0 Turbo:</h3>
+      <h3 style="font-size: 10px;">GPT4.0:</h3>
       <p>{{ gptcontentvalue }}</p>
     </div>
 
