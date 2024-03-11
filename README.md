@@ -6,53 +6,32 @@
 
 - [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin)
 
-## Project Setup
 
-### Install
 
-```bash
-$ pnpm install
-```
+## 1.产品特点
 
-### Development
+### 快速进行翻译 并且可以使用gpt4.0进行搜索补充等 更加快捷理解内容 减少繁琐操作
 
-```bash
-$ pnpm dev
-```
+### [nutjs ](https://nutjs.dev)代替robotjs实现自动化操作
 
-### Build
+### [*uiohook*-napi](https://github.com/SnosMe/uiohook-napi)代替iohook 实现事件监听
 
-```bash
-# For windows
-$ pnpm build:win
+### 兼容高版本的electron框架
 
-# For macOS
-$ pnpm build:mac
-
-# For Linux
-$ pnpm build:linux
-```
-
-### 使用[[nutjs ]([nutjs.dev](https://nutjs.dev/)))代替robotjs实现自动化操作
-
-### 使用[[*uiohook*-napi](https://github.com/SnosMe/uiohook-napi))代替iohook 实现事件监听
-
-### 并且兼容高版本的electron 
-
-### node -version = 18.16.0
+### node - v  = 18.16.0
 
 
 
-## 具体使用方法
+## 2.具体使用方法
 
 ### 1.左键选中内容 
 
 ### 2.右键长按0.2s左右
 
-### 3.tools中显示对应的翻译的句子
+### 3.eletools中红线上面显示翻译deeplx内容 下面显示gpt4.0搜寻到的内容
 
 
 
-## 使用截图说明
+## 3.使用案例
 
-![image-20240306134013195](README.assets/image-20240306134013195.png)
+![image-20240311102739988](README.assets/image-20240311102739988.png)
