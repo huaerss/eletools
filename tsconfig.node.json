@@ -9,8 +9,9 @@
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "composite": true,
-    "types": [
+    "types": [ 
       "electron-vite/node"
+      
     ]
   }
 }
