@@ -1,11 +1,10 @@
-import { app, shell, BrowserWindow, ipcMain, globalShortcut } from 'electron'
+import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 const axios = require('axios');
 app.on('ready', createWindow);
 
 function createWindow(): void {
-  // Create the browser window.
   let mainWindow = new BrowserWindow({
     width: 500,
     height: 100,
@@ -27,6 +26,28 @@ function createWindow(): void {
   ipcMain.on('close-window', () => {
     mainWindow.close();
   });
+  ipcMain.on('mouse-enter', () => {
+    const [_, y] = mainWindow.getPosition();
+    if (y == 0) {
+      mainWindow.setSize(500, 200);
+    }
+  });
+  ipcMain.on('mouse-leave', () => {
+    const [_, y] = mainWindow.getPosition();
+    if (y == 0) {
+      mainWindow.setSize(500, 1);
+    }
+  });
+  ipcMain.on('changeModel', (__, status) => {
+    const [currentX, _] = mainWindow.getPosition();
+    if (status == 'zhiding') {
+      mainWindow.setPosition(currentX, 0);
+
+    } else {
+      mainWindow.setPosition(currentX, 1);
+    }
+
+  })
 
   ipcMain.handle('perform-request', async (_, arg) => {
     const response = await axios.post('https://api.deeplx.org/translate', arg.data,
@@ -44,16 +65,30 @@ function createWindow(): void {
       event.sender.send('GPT-stream-error', error);
     }
   });
+
   mainWindow.on('ready-to-show', () => {
     // 打开开发者工具
     // mainWindow.webContents.openDevTools()
     mainWindow.show()
   })
 
+  mainWindow.on('move', () => {
+    const [_, y] = mainWindow.getPosition();
+    if (y == 0) {
+      mainWindow.webContents.send('change-draggable-region', 'none');
+      mainWindow.setSize(500, 1);
+    } else {
+      mainWindow.webContents.send('change-draggable-region', 'drag');
+      mainWindow.setSize(500, 100);
+    }
+
+  })
+  mainWindow.setPosition(1200, 1);
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
   })
+
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
@@ -63,6 +98,7 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 }
+
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

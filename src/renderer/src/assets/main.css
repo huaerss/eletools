@@ -5,7 +5,7 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background-image: url('./wavy-lines.svg');
+  /* background-image: url('./wavy-lines.svg'); */
   background-size: cover;
   user-select: none;
 }
@@ -14,7 +14,7 @@ code {
   font-weight: 600;
   padding: 3px 5px;
   border-radius: 2px;
-  background-color: var(--color-background-mute);
+  /* background-color: var(--color-background-mute); */
   font-family:
     ui-monospace,
     SFMono-Regular,
@@ -115,13 +115,13 @@ code {
   font-size: 14px;
   border-color: var(--ev-button-alt-border);
   color: var(--ev-button-alt-text);
-  background-color: var(--ev-button-alt-bg);
+  /* background-color: var(--ev-button-alt-bg); */
 }
 
 .action a:hover {
   border-color: var(--ev-button-alt-hover-border);
   color: var(--ev-button-alt-hover-text);
-  background-color: var(--ev-button-alt-hover-bg);
+  /* background-color: var(--ev-button-alt-hover-bg); */
 }
 
 .versions {
@@ -134,7 +134,7 @@ code {
   overflow: hidden;
   align-items: center;
   border-radius: 22px;
-  background-color: #202127;
+  /* background-color: #202127; */
   backdrop-filter: blur(24px);
 }
 
