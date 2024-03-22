@@ -4,7 +4,10 @@ import Versions from './components/Versions.vue'
 </script>
 
 <template>
-  <Versions />
+  <div id="win">
+    <Versions />
+
+  </div>
 
 </template>
 
@@ -12,6 +15,15 @@ import Versions from './components/Versions.vue'
 :root {
   height: 100;
   width: 500;
+}
+
+
+
+#win {
+  width: 500px;
+  height: 300px;
+  text-align: center;
+  -webkit-app-region: drag;
 }
 
 .draggable {

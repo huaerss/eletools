@@ -6,7 +6,7 @@ body {
   justify-content: center;
   overflow: hidden;
   /* background-image: url('./wavy-lines.svg'); */
-  background-size: cover;
+  /* background-size: cover; */
   user-select: none;
 }
 
@@ -73,15 +73,15 @@ code {
 }
 
 .vue {
-  background: -webkit-linear-gradient(315deg, #42d392 25%, #647eff);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: 700;
+  /* background: -webkit-linear-gradient(315deg, #42d392 25%, #647eff); */
+  /* background-clip: text; */
+  /* -webkit-background-clip: text; */
+  /* -webkit-text-fill-color: transparent; */
+  /* font-weight: 700; */
 }
 
 .ts {
-  background: -webkit-linear-gradient(315deg, #3178c6 45%, #f0dc4e);
+  /* background: -webkit-linear-gradient(315deg, #3178c6 45%, #f0dc4e); */
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -129,7 +129,7 @@ code {
   bottom: 30px;
   margin: 0 auto;
   padding: 15px 0;
-  font-family: 'Menlo', 'Lucida Console', monospace;
+  /* font-family: 'Menlo', 'Lucida Console', monospace; */
   display: inline-flex;
   overflow: hidden;
   align-items: center;

@@ -11,13 +11,17 @@ function createWindow(): void {
     show: false,
     alwaysOnTop: true,
     frame: false,
+    // transparent: true,
+
+    backgroundColor: '#FFFAE8',
+    // resizable: false,
     autoHideMenuBar: true,
+
     webPreferences: {
       sandbox: false,
       nodeIntegration: true,
       contextIsolation: true,
       preload: join(__dirname, '../preload/index.js'),
-
     }
   })
   ipcMain.on('clipboard', (_, copiedText) => {
@@ -45,6 +49,8 @@ function createWindow(): void {
 
     } else {
       mainWindow.setPosition(currentX, 1);
+      console.log(globalheight, globalwith);
+      mainWindow.setSize(globalwith, globalheight);
     }
 
   })
@@ -72,14 +78,15 @@ function createWindow(): void {
     mainWindow.show()
   })
 
+
   mainWindow.on('move', () => {
     const [_, y] = mainWindow.getPosition();
     if (y == 0) {
       mainWindow.webContents.send('change-draggable-region', 'none');
-      mainWindow.setSize(500, 1);
+      console.log('none');
+      mainWindow.setSize(500, 10);
     } else {
       mainWindow.webContents.send('change-draggable-region', 'drag');
-      mainWindow.setSize(500, 100);
     }
 
   })
