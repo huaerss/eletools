@@ -1,11 +1,14 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, clipboard, ipcRenderer } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { uIOhook } from 'uiohook-napi'
+const { keyboard, Key } = require("@nut-tree/nut-js");
 const axios = require('axios');
 app.on('ready', createWindow);
+let mainWindow; // 全局变量
 
 function createWindow(): void {
-  let mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 500,
     height: 100,
     show: false,
@@ -42,6 +45,7 @@ function createWindow(): void {
       mainWindow.setSize(500, 1);
     }
   });
+
   ipcMain.on('changeModel', (__, status) => {
     const [currentX, _] = mainWindow.getPosition();
     if (status == 'zhiding') {
@@ -49,8 +53,7 @@ function createWindow(): void {
 
     } else {
       mainWindow.setPosition(currentX, 1);
-      console.log(globalheight, globalwith);
-      mainWindow.setSize(globalwith, globalheight);
+      // mainWindow.setSize(globalwith, globalheight);
     }
 
   })
@@ -131,6 +134,45 @@ app.whenReady().then(() => {
   })
 })
 
+async function performCopy() {
+  await keyboard.pressKey(Key.LeftControl, Key.C);
+  keyboard.releaseKey(Key.LeftControl, Key.C);
+
+
+}
+function handleRightClick() {
+  console.log('right click');
+  performCopy()
+  setTimeout(() => {
+    const copiedText = clipboard.readText();
+    console.log(copiedText);
+    mainWindow.webContents.send('clipboard', copiedText);
+  }, 500);
+}
+
+let rightMouseDownTimer: any = null;
+uIOhook.on('mousedown', (e) => {
+  if (e.button === 2) {
+    rightMouseDownTimer = setTimeout(handleRightClick, 250);
+  }
+});
+
+uIOhook.on('mouseup', (e) => {
+  if (e.button === 2) {
+
+    // 清除计时器
+    if (rightMouseDownTimer) {
+      clearTimeout(rightMouseDownTimer);
+      rightMouseDownTimer = null;
+    }
+  }
+});
+
+
+
+
+uIOhook.start()
+
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
@@ -140,5 +182,3 @@ app.on('window-all-closed', () => {
   }
 })
 
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here.
