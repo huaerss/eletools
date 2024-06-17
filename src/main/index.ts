@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, clipboard, ipcRenderer } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, clipboard } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { uIOhook } from 'uiohook-napi'
@@ -6,19 +6,21 @@ const { keyboard, Key } = require("@nut-tree/nut-js");
 const axios = require('axios');
 app.on('ready', createWindow);
 let mainWindow; // 全局变量
+let GPTWindow; // 新窗口全局变量
+
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 500,
     height: 100,
-    show: false,
-    alwaysOnTop: true,
-    frame: false,
+    show: false, // 先隐藏
+    alwaysOnTop: true, // 置顶
+    frame: false, // 无边框
     // transparent: true,
 
     backgroundColor: '#FFFAE8',
     // resizable: false,
-    autoHideMenuBar: true,
+    autoHideMenuBar: true, // 隐藏菜单栏
 
     webPreferences: {
       sandbox: false,
@@ -27,9 +29,7 @@ function createWindow(): void {
       preload: join(__dirname, '../preload/index.js'),
     }
   })
-  ipcMain.on('clipboard', (_, copiedText) => {
-    mainWindow.webContents.send('receive-clipboard-data', copiedText);
-  });
+
   ipcMain.on('close-window', () => {
     mainWindow.close();
   });
@@ -59,7 +59,7 @@ function createWindow(): void {
   })
 
   ipcMain.handle('perform-request', async (_, arg) => {
-    const response = await axios.post('https://api.deeplx.org/translate', arg.data,
+    const response = await axios.post('https://api.deeplx.org/0oWyL9jvBql-MRdzVMbT83CY-cej8rgAFwThk9F7xrw/translate', arg.data,
       arg.Headers);
     return response.data;
   });
@@ -86,7 +86,6 @@ function createWindow(): void {
     const [_, y] = mainWindow.getPosition();
     if (y == 0) {
       mainWindow.webContents.send('change-draggable-region', 'none');
-      console.log('none');
       mainWindow.setSize(500, 10);
     } else {
       mainWindow.webContents.send('change-draggable-region', 'drag');
@@ -100,35 +99,63 @@ function createWindow(): void {
   })
 
 
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 }
+function createGPTWindow() {
+  if (GPTWindow) {
+    if (GPTWindow.isMinimized()) GPTWindow.restore(); // 如果窗口被最小化则恢复
+    GPTWindow.setAlwaysOnTop(true);  // 将窗口置顶
+    GPTWindow.show();  // 显示窗口
+    GPTWindow.focus();  // 聚焦窗口
+    GPTWindow.setAlwaysOnTop(false);  // 取消置顶以恢复默认行为
+  } else {
+    GPTWindow = new BrowserWindow({
+      width: 1000,
+      height: 600,
+      autoHideMenuBar: true, // 隐藏菜单栏
+      webPreferences: {
+        preload: join(__dirname, '../preload/index.js'),
+      }
+    });
+
+    GPTWindow.loadURL('https://new.oaifree.com/?temporary-chat=true');
+
+    GPTWindow.on('closed', () => {
+      GPTWindow = null;
+    });
+  }
+}
 
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
+uIOhook.on('keydown', (e) => {
+  if (e.altKey && e.keycode === 83) { // 83 是 . 的 keycode
+    if (GPTWindow) {
+      if (GPTWindow.isVisible()) {
+        GPTWindow.minimize();
+      } else {
+        createGPTWindow();
+      }
+    } else {
+      createGPTWindow();
+    }
+  }
+});
+
+
+
 app.whenReady().then(() => {
-  // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  electronApp.setAppUserModelId('gptele')
 
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
+  // IPC test.
   ipcMain.on('ping', () => console.log('pong'))
-
-
-
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
@@ -137,16 +164,13 @@ app.whenReady().then(() => {
 async function performCopy() {
   await keyboard.pressKey(Key.LeftControl, Key.C);
   keyboard.releaseKey(Key.LeftControl, Key.C);
-
-
 }
 function handleRightClick() {
   console.log('right click');
   performCopy()
   setTimeout(() => {
     const copiedText = clipboard.readText();
-    console.log(copiedText);
-    mainWindow.webContents.send('clipboard', copiedText);
+    mainWindow.webContents.send('receive-clipboard-data', copiedText);
   }, 500);
 }
 
@@ -173,9 +197,7 @@ uIOhook.on('mouseup', (e) => {
 
 uIOhook.start()
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()

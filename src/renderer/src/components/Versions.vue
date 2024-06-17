@@ -38,7 +38,7 @@ onMounted(() => {
     }
   })
   window.electronAPI.onClipboardDataReceived(async (res) => {
-    clipboardData.value = '翻译中...'
+    clipboardData.value = '翻译中...' + res
     gptcontentvalue.value = '查询中...'
     // 翻译接口
     const result = await window.electron.ipcRenderer.invoke('perform-request', {

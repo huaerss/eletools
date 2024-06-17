@@ -14,8 +14,6 @@ const api = {
 contextBridge.exposeInMainWorld('electronAPI', {
   onClipboardDataReceived: (callback) => {
     ipcRenderer.on('receive-clipboard-data', (_, data) => callback(data));
-
-
   },
   removeClipboardDataListener: () => {
     ipcRenderer.removeAllListeners('receive-clipboard-data');
