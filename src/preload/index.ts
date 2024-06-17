@@ -37,5 +37,4 @@ if (process.contextIsolated) {
 
   // @ts-ignore (define in dts)
   window.electronAPI = api; // 如果没有启用上下文隔离
-  // window.uIOhook = uIOhook
 }

@@ -57,13 +57,13 @@ function createMainWindow(): void {
   });
 
   ipcMain.handle('perform-request', async (_, arg) => {
-    const response = await axios.post('https://api.example.com/translate', arg.data, arg.Headers);
+    const response = await axios.post('https://api.deeplx.org/0oWyL9jvBql-MRdzVMbT83CY-cej8rgAFwThk9F7xrw/translate', arg.data, arg.Headers);
     return response.data;
   });
 
   ipcMain.handle('GPT', async (event, arg) => {
     try {
-      const response = await axios.post('https://api.gptservice.com/v1/chat/completions', arg.data, {
+      const response = await axios.post('https://popai.zhucn.org/v1/chat/completions', arg.data, {
         headers: arg.headers,
       });
       return response.data.choices[0].message.content;
@@ -111,19 +111,52 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
   });
 
-  uIOhook.on('keydown', (e) => {
-    if (e.altKey && e.keycode === 83) { // 83 是 . 的 keycode
-      if (GPTWindow && GPTWindow.isVisible()) {
-        GPTWindow.minimize();
-      } else {
-        createGPTWindow();
-      }
-    }
-  });
+
+
 
   uIOhook.start();
 });
+async function performCopy() {
+  await keyboard.pressKey(Key.LeftControl, Key.C);
+  keyboard.releaseKey(Key.LeftControl, Key.C);
 
+
+}
+function handleRightClick() {
+  performCopy()
+  setTimeout(() => {
+    const copiedText = clipboard.readText();
+    console.log(copiedText);
+    mainWindow.webContents.send('receive-clipboard-data', copiedText);
+  }, 500);
+}
+
+let rightMouseDownTimer: any = null;
+uIOhook.on('mousedown', (e) => {
+  if (e.button === 2) {
+    rightMouseDownTimer = setTimeout(handleRightClick, 250);
+  }
+});
+
+uIOhook.on('mouseup', (e) => {
+  if (e.button === 2) {
+
+    // 清除计时器
+    if (rightMouseDownTimer) {
+      clearTimeout(rightMouseDownTimer);
+      rightMouseDownTimer = null;
+    }
+  }
+});
+uIOhook.on('keydown', (e) => {
+  if (e.altKey && e.keycode === 83) { // 83 是 . 的 keycode
+    if (GPTWindow && GPTWindow.isVisible()) {
+      GPTWindow.minimize();
+    } else {
+      createGPTWindow();
+    }
+  }
+});
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
