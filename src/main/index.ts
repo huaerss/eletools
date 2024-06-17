@@ -26,7 +26,7 @@ function createMainWindow(): void {
     }
   });
 
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 
   ipcMain.on('close-window', () => {
     mainWindow?.close();
@@ -65,8 +65,15 @@ function createMainWindow(): void {
     try {
       const response = await axios.post('https://popai.zhucn.org/v1/chat/completions', arg.data, {
         headers: arg.headers,
+        responseType: 'stream'
       });
-      return response.data.choices[0].message.content;
+      response.data.on('data', (chunk) => {
+        event.sender.send('GPT-stream-chunk', chunk.toString());
+      });
+
+      response.data.on('end', () => {
+        event.sender.send('GPT-stream-end');
+      });
     } catch (error) {
       event.sender.send('GPT-stream-error', error);
     }

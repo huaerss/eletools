@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 const isDraggable = ref(true)
 const clipboardData = ref('左键选中需要翻译的文本,右键长按即可翻译')
 const gptcontentvalue = ref('')
+let isclear = true
 declare const window: {
   electronAPI: {
     onClipboardDataReceived: (callback: (res: string) => void) => void
@@ -27,10 +28,29 @@ const changestatus = () => {
     window.electron.ipcRenderer.send('changeModel', 'drag')
   }
 }
-document.addEventListener('mousedown', (e) => {
-  console.log(e)
+window.electron.ipcRenderer.on('GPT-stream-chunk', (event, dataString) => {
+  console.log(dataString)
+  const prefix = 'data: '
+  if (dataString.startsWith(prefix)) {
+    const jsonString = dataString.substring(prefix.length)
+    try {
+      const jsonData = JSON.parse(jsonString)
+      if (jsonData && jsonData.choices && jsonData.choices.length > 0) {
+        const content = jsonData.choices[0].delta.content
+        if (isclear) {
+          gptcontentvalue.value = ''
+          isclear = false
+        }
+        gptcontentvalue.value += content
+      }
+    } catch (error) {
+      console.error('Error parsing JSON data:', error)
+    }
+  }
 })
-
+window.electron.ipcRenderer.on('GPT-stream-end', () => {
+  isclear = true
+})
 onMounted(() => {
   document.addEventListener('keyup', (event) => {
     if (event.key === 'Escape') {
@@ -49,9 +69,10 @@ onMounted(() => {
     })
     clipboardData.value = result.data
     // GPT接口
-    const gptcontent = await window.electron.ipcRenderer.invoke('GPT', {
+    window.electron.ipcRenderer.invoke('GPT', {
       data: {
         model: 'gpt-4o',
+        stream: true,
         messages: [
           {
             role: 'system',
@@ -67,7 +88,7 @@ onMounted(() => {
         'Content-Type': 'application/json'
       }
     })
-    gptcontentvalue.value = gptcontent
+    // gptcontentvalue.value = gptcontent
   })
 })
 // 监听鼠标移入事件
