@@ -2,16 +2,15 @@
   "extends": "@electron-toolkit/tsconfig/tsconfig.node.json",
   "include": [
     "electron.vite.config.*",
-    "src/main/**/*",
+    // "src/main/**/*",
     "src/preload/**/*"
   ],
   "compilerOptions": {
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "composite": true,
-    "types": [ 
+    "types": [
       "electron-vite/node"
-      
     ]
   }
 }
