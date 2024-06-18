@@ -26,7 +26,7 @@ function createMainWindow(): void {
     }
   });
 
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
   ipcMain.on('close-window', () => {
     mainWindow?.close();
@@ -67,8 +67,16 @@ function createMainWindow(): void {
         headers: arg.headers,
         responseType: 'stream'
       });
-      response.data.on('data', (chunk) => {
-        event.sender.send('GPT-stream-chunk', chunk.toString());
+
+      response.data.on('data', chunk => {
+        const chunkAsString = chunk.toString();
+        // 使用正则表达式匹配 content 字段的值
+        const regex = /"content":\s*"([^"]*)"/g;
+        let match;
+        while ((match = regex.exec(chunkAsString)) !== null) {
+          event.sender.send('GPT-stream-chunk', match[1]);
+
+        }
       });
 
       response.data.on('end', () => {

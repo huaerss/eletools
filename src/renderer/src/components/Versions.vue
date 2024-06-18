@@ -29,24 +29,11 @@ const changestatus = () => {
   }
 }
 window.electron.ipcRenderer.on('GPT-stream-chunk', (event, dataString) => {
-  console.log(dataString)
-  const prefix = 'data: '
-  if (dataString.startsWith(prefix)) {
-    const jsonString = dataString.substring(prefix.length)
-    try {
-      const jsonData = JSON.parse(jsonString)
-      if (jsonData && jsonData.choices && jsonData.choices.length > 0) {
-        const content = jsonData.choices[0].delta.content
-        if (isclear) {
-          gptcontentvalue.value = ''
-          isclear = false
-        }
-        gptcontentvalue.value += content
-      }
-    } catch (error) {
-      console.error('Error parsing JSON data:', error)
-    }
+  if (isclear) {
+    gptcontentvalue.value = ''
+    isclear = false
   }
+  gptcontentvalue.value += dataString
 })
 window.electron.ipcRenderer.on('GPT-stream-end', () => {
   isclear = true
