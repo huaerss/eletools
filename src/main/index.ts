@@ -155,8 +155,6 @@ uIOhook.on('mousedown', (e) => {
 
 uIOhook.on('mouseup', (e) => {
   if (e.button === 2) {
-
-    // 清除计时器
     if (rightMouseDownTimer) {
       clearTimeout(rightMouseDownTimer);
       rightMouseDownTimer = null;
@@ -169,6 +167,10 @@ uIOhook.on('keydown', (e) => {
       GPTWindow.minimize();
     } else {
       createGPTWindow();
+      // 确保窗口创建后执行脚本
+      const copiedText = clipboard.readText();
+      ipcMain.emit('paste-clipboard', null, copiedText);
+
     }
   }
 });
