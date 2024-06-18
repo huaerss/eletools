@@ -1,21 +1,22 @@
 // GPTWindow.ts
-import { BrowserWindow, ipcMain } from 'electron';
+import { BrowserWindow, ipcMain, nativeTheme } from 'electron';
 import { join } from 'path';
 
 export let GPTWindow: BrowserWindow | null = null;
 
 export function createGPTWindow(): void {
   if (GPTWindow) {
-    if (GPTWindow.isMinimized()) GPTWindow.restore();
-    GPTWindow.setAlwaysOnTop(true);
+    if (GPTWindow.isMinimized()) {
+      GPTWindow.restore();
+    }
     GPTWindow.show();
     GPTWindow.focus();
-    console.log('Window should be on top and focused');
   } else {
     GPTWindow = new BrowserWindow({
       width: 1000,
       height: 600,
       autoHideMenuBar: true,
+      show: false, // 初始化时不显示窗口
       webPreferences: {
         preload: join(__dirname, '../preload/index.js'),
         nodeIntegration: true,
@@ -24,24 +25,16 @@ export function createGPTWindow(): void {
     });
 
     GPTWindow.loadURL('https://new.oaifree.com/?temporary-chat=true');
+    nativeTheme.themeSource = 'dark'; // 也可以设置为 'light' 或 'system'
 
     GPTWindow.once('ready-to-show', () => {
+      GPTWindow?.setAlwaysOnTop(true); // Temporarily set the window on top
       GPTWindow?.show();
-      GPTWindow?.setAlwaysOnTop(true);
-      console.log('Window created and set to always on top');
-    });
-
-    GPTWindow.webContents.once('did-finish-load', () => {
-
-
-      ipcMain.on('paste-clipboard', (event, arg) => {
-        const copiedText = arg;
-        const escapedText = escapeForJavaScript(copiedText);
-        const script = `document.querySelector('#prompt-textarea').value = '${escapedText}';`;
-        GPTWindow?.webContents.executeJavaScript(script).catch(err => {
-          console.error("Script execution error:", err);
-        });
-      });
+      setTimeout(() => {
+        if (GPTWindow) {
+          GPTWindow.setAlwaysOnTop(false); // Cancel the top-most setting after a short delay
+        }
+      }, 200); // This delay can be adjusted as needed
     });
 
     GPTWindow.on('closed', () => {
@@ -49,8 +42,19 @@ export function createGPTWindow(): void {
       ipcMain.removeAllListeners('paste-clipboard'); // Clean up the listener
       console.log('Window closed and listeners cleaned up');
     });
+
+    // Setting up the listener for paste-clipboard
+    ipcMain.on('paste-clipboard', (event, arg) => {
+      const copiedText = arg;
+      const escapedText = escapeForJavaScript(copiedText);
+      const script = `document.querySelector('#prompt-textarea').value = '${escapedText}';`;
+      GPTWindow?.webContents.executeJavaScript(script).catch(err => {
+        console.error("Script execution error:", err);
+      });
+    });
   }
 }
+
 function escapeForJavaScript(str: string): string {
   return str.replace(/\\/g, '\\\\') // 转义反斜杠
     .replace(/'/g, "\\'")   // 转义单引号

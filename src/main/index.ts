@@ -167,12 +167,13 @@ uIOhook.on('keydown', (e) => {
       GPTWindow.minimize();
     } else {
       createGPTWindow();
-      // 确保窗口创建后执行脚本
-      const copiedText = clipboard.readText();
-      ipcMain.emit('paste-clipboard', null, copiedText);
+      // const copiedText = clipboard.readText();
+      // ipcMain.emit('paste-clipboard', null, copiedText);
 
     }
   }
+
+
 });
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
