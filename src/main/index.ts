@@ -5,6 +5,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import { uIOhook } from 'uiohook-napi';
 import { createGPTWindow, GPTWindow } from './GPTWindow'; // 导入 GPTWindow 模块
 const { keyboard, Key } = require("@nut-tree/nut-js");
+
 const axios = require('axios');
 
 let mainWindow: BrowserWindow;
@@ -57,7 +58,15 @@ function createMainWindow(): void {
   });
 
   ipcMain.handle('perform-request', async (_, arg) => {
-    const response = await axios.post('https://api.deeplx.org/0oWyL9jvBql-MRdzVMbT83CY-cej8rgAFwThk9F7xrw/translate', arg.data, arg.Headers);
+    const francModule = await import('franc');
+
+    console.log(arg.data);
+    console.log(francModule.franc(arg.data.text));
+    if (francModule.franc(arg.data.text) == 'cmn') {
+      arg.data.target_lang = 'en';
+    }
+
+    const response = await axios.post('https://api.deeplx.org/0oWyL9jvBql-MRdzVMbT83CY-cej8rgAFwThk9F7xrw/translate', arg.data);
     return response.data;
   });
 
@@ -67,6 +76,7 @@ function createMainWindow(): void {
         headers: arg.headers,
         responseType: 'stream'
       });
+
 
       response.data.on('data', chunk => {
         const chunkAsString = chunk.toString();

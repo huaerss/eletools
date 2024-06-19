@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 const isDraggable = ref(true)
 const clipboardData = ref('左键选中需要翻译的文本,右键长按即可翻译')
 const gptcontentvalue = ref('')
+
 let isclear = true
 declare const window: {
   electronAPI: {
@@ -51,6 +52,7 @@ onMounted(() => {
     const result = await window.electron.ipcRenderer.invoke('perform-request', {
       data: {
         text: res,
+
         target_lang: 'ZH'
       }
     })
