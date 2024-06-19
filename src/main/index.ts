@@ -60,8 +60,6 @@ function createMainWindow(): void {
   ipcMain.handle('perform-request', async (_, arg) => {
     const francModule = await import('franc');
 
-    console.log(arg.data);
-    console.log(francModule.franc(arg.data.text));
     if (francModule.franc(arg.data.text) == 'cmn') {
       arg.data.target_lang = 'en';
     }
@@ -151,7 +149,6 @@ function handleRightClick() {
   performCopy()
   setTimeout(() => {
     const copiedText = clipboard.readText();
-    console.log(copiedText);
     mainWindow.webContents.send('receive-clipboard-data', copiedText);
   }, 500);
 }
