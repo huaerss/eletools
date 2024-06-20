@@ -95,9 +95,7 @@ function createMainWindow(): void {
     }
   });
 
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.show();
-  });
+
 
   mainWindow.on('move', () => {
     const [_, y] = mainWindow?.getPosition() || [];
@@ -142,23 +140,46 @@ app.whenReady().then(() => {
 async function performCopy() {
   await keyboard.pressKey(Key.LeftControl, Key.C);
   keyboard.releaseKey(Key.LeftControl, Key.C);
-
-
 }
 function handleRightClick() {
   performCopy()
   setTimeout(() => {
     const copiedText = clipboard.readText();
     mainWindow.webContents.send('receive-clipboard-data', copiedText);
+    // 窗口不可见时，显示并置顶窗口
+    mainWindow.show();
+    mainWindow.setAlwaysOnTop(true);
+
   }, 500);
 }
-
+const currentPos = { x: 0, y: 0 };
 let rightMouseDownTimer: any = null;
 uIOhook.on('mousedown', (e) => {
-  if (e.button === 2) {
-    rightMouseDownTimer = setTimeout(handleRightClick, 250);
+  switch (e.button) {
+    case 2: // 右键
+      if (mainWindow) {
+        if (!mainWindow.isVisible()) {
+          rightMouseDownTimer = setTimeout(() => {
+            handleRightClick();
+            mainWindow.setPosition(e.x - 280, e.y - 120);
+            currentPos.x = e.x;
+            currentPos.y = e.y;
+          }, 250);
+        }
+      }
+      break;
   }
 });
+uIOhook.on('mousemove', (e) => {
+  if (mainWindow && mainWindow.isVisible()) {
+    //  如果鼠标移动的距离超过 300，隐藏窗口
+    if (Math.abs(e.x - currentPos.x) > 300 || Math.abs(e.y - currentPos.y) > 300) {
+      mainWindow.hide();
+    }
+
+  }
+}
+);
 
 uIOhook.on('mouseup', (e) => {
   if (e.button === 2) {
