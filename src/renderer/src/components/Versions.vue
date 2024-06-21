@@ -58,7 +58,7 @@ onMounted(() => {
           {
             role: 'system',
             content:
-              '压缩你的回答答案,最大不超过79个中文字以内,并且所有回答尽量是中文可以混合一些术语英文,不需要给我返回参考链接,直接给我你总结的内容即可'
+              '压缩你的回答的答案,如果我给你发送代码你只需要解释是什么意思不需要再次返回代码的内容给我,并且所有回答尽量是中文,不需要给我返回参考链接,直接给我你总结的内容即可'
           },
           { role: 'user', content: res }
         ]
@@ -83,14 +83,14 @@ onUnmounted(() => {
     <div class="content">
       <p>{{ clipboardData }}</p>
       <div v-if="gptcontentvalue" class="divider"></div>
-      <p v-html="gptcontentvalue"></p>
+      <p>{{ gptcontentvalue }}</p>
     </div>
   </div>
 </template>
 
 <style>
 .content-container {
-  height: 120px; /* 固定高度 */
+  height: 100vh; /* 固定高度 */
   overflow-y: scroll; /* 超出部分显示滚动条 */
 }
 

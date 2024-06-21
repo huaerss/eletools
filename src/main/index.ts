@@ -15,7 +15,7 @@ let mainWindow: BrowserWindow;
 function createMainWindow(): void {
   mainWindow = new BrowserWindow({
     width: 500,
-    height: 120,
+    height: 140,
     show: false, // 先隐藏
     alwaysOnTop: true, // 置顶
     frame: false, // 无边框
