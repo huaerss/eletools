@@ -4,6 +4,8 @@ import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import { uIOhook } from 'uiohook-napi';
 import { createGPTWindow, GPTWindow } from './GPTWindow'; // 导入 GPTWindow 模块
+import { createTray } from './Tray'; // 导入 tray 模块
+
 const { keyboard, Key } = require("@nut-tree/nut-js");
 
 const axios = require('axios');
@@ -13,11 +15,13 @@ let mainWindow: BrowserWindow;
 function createMainWindow(): void {
   mainWindow = new BrowserWindow({
     width: 500,
-    height: 100,
+    height: 120,
     show: false, // 先隐藏
     alwaysOnTop: true, // 置顶
     frame: false, // 无边框
-    backgroundColor: '#FFFAE8', // 背景颜色
+    backgroundColor: '#00000000', // 背景透明
+    // 隐藏背景透明度
+    transparent: true,
     autoHideMenuBar: true, // 隐藏菜单栏
     webPreferences: {
       sandbox: false,
@@ -34,29 +38,9 @@ function createMainWindow(): void {
     GPTWindow?.close();
   });
 
-  ipcMain.on('mouse-enter', () => {
-    const [_, y] = mainWindow?.getPosition() || [];
-    if (y === 0) {
-      mainWindow?.setSize(500, 200);
-    }
-  });
 
-  ipcMain.on('mouse-leave', () => {
-    const [_, y] = mainWindow?.getPosition() || [];
-    if (y === 0) {
-      mainWindow?.setSize(500, 1);
-    }
-  });
 
-  ipcMain.on('changeModel', (__, status) => {
-    const [currentX, _] = mainWindow?.getPosition() || [];
-    if (status === 'zhiding') {
-      mainWindow?.setPosition(currentX, 0);
-    } else {
-      mainWindow?.setPosition(currentX, 1);
-    }
-  });
-
+  //   调用 翻译 事件处理程序
   ipcMain.handle('perform-request', async (_, arg) => {
     const francModule = await import('franc');
 
@@ -94,20 +78,17 @@ function createMainWindow(): void {
       event.sender.send('GPT-stream-error', error);
     }
   });
+  // mainWindow.on('move', () => {
+  //   const [_, y] = mainWindow?.getPosition() || [];
+  //   if (y === 0) {
+  //     mainWindow.webContents.send('change-draggable-region', 'none');
+  //     mainWindow.setSize(500, 10);
+  //   } else {
+  //     mainWindow.webContents.send('change-draggable-region', 'drag');
+  //   }
+  // });
 
-
-
-  mainWindow.on('move', () => {
-    const [_, y] = mainWindow?.getPosition() || [];
-    if (y === 0) {
-      mainWindow.webContents.send('change-draggable-region', 'none');
-      mainWindow.setSize(500, 10);
-    } else {
-      mainWindow.webContents.send('change-draggable-region', 'drag');
-    }
-  });
-
-  mainWindow.setPosition(1200, 1);
+  // mainWindow.setPosition(1200, 1);
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url);
     return { action: 'deny' };
@@ -120,8 +101,11 @@ function createMainWindow(): void {
   }
 }
 
+
+
 app.whenReady().then(() => {
   createMainWindow();
+  createTray(mainWindow);
   electronApp.setAppUserModelId('gptele');
 
   app.on('browser-window-created', (_, window) => {
@@ -158,14 +142,13 @@ uIOhook.on('mousedown', (e) => {
   switch (e.button) {
     case 2: // 右键
       if (mainWindow) {
-        if (!mainWindow.isVisible()) {
-          rightMouseDownTimer = setTimeout(() => {
-            handleRightClick();
-            mainWindow.setPosition(e.x - 280, e.y - 120);
-            currentPos.x = e.x;
-            currentPos.y = e.y;
-          }, 250);
-        }
+        rightMouseDownTimer = setTimeout(() => {
+          handleRightClick();
+          mainWindow.setPosition(e.x - 280, e.y - 140);
+          currentPos.x = e.x;
+          currentPos.y = e.y;
+        }, 250);
+
       }
       break;
   }
@@ -173,10 +156,9 @@ uIOhook.on('mousedown', (e) => {
 uIOhook.on('mousemove', (e) => {
   if (mainWindow && mainWindow.isVisible()) {
     //  如果鼠标移动的距离超过 300，隐藏窗口
-    if (Math.abs(e.x - currentPos.x) > 300 || Math.abs(e.y - currentPos.y) > 300) {
+    if (Math.abs(e.x - currentPos.x) > 400 || Math.abs(e.y - currentPos.y) > 400) {
       mainWindow.hide();
     }
-
   }
 }
 );
@@ -190,18 +172,20 @@ uIOhook.on('mouseup', (e) => {
   }
 });
 uIOhook.on('keydown', (e) => {
-  if (e.altKey && e.keycode === 83) { // 83 是 . 的 keycode
-    if (GPTWindow && GPTWindow.isVisible()) {
-      GPTWindow.minimize();
+  if (e.altKey && e.keycode === 83) { // 83 是 'S' 的 keycode
+    if (GPTWindow) {
+      if (GPTWindow.isVisible() && GPTWindow.isAlwaysOnTop()) {
+        GPTWindow.minimize();
+      } else {
+        GPTWindow.show();
+        GPTWindow.setAlwaysOnTop(true);
+      }
     } else {
       createGPTWindow();
-      // const copiedText = clipboard.readText();
-      // ipcMain.emit('paste-clipboard', null, copiedText);
-
+      const copiedText = clipboard.readText();
+      ipcMain.emit('paste-clipboard', null, copiedText);
     }
   }
-
-
 });
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

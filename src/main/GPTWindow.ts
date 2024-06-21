@@ -24,7 +24,7 @@ export function createGPTWindow(): void {
       }
     });
 
-    GPTWindow.loadURL('https://new.oaifree.com/?temporary-chat=true');
+    GPTWindow.loadURL('https://chat.gyh.one/#/');
     nativeTheme.themeSource = 'dark'; // 也可以设置为 'light' 或 'system'
 
     GPTWindow.once('ready-to-show', () => {
@@ -34,7 +34,7 @@ export function createGPTWindow(): void {
         if (GPTWindow) {
           GPTWindow.setAlwaysOnTop(false); // Cancel the top-most setting after a short delay
         }
-      }, 200); // This delay can be adjusted as needed
+      }, 200);
     });
 
     GPTWindow.on('closed', () => {
