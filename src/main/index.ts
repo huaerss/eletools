@@ -3,13 +3,10 @@ import { app, BrowserWindow, ipcMain, clipboard, shell } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import { uIOhook } from 'uiohook-napi';
-import { createGPTWindow, GPTWindow } from './GPTWindow'; // 导入 GPTWindow 模块
-import { createTray } from './Tray'; // 导入 tray 模块
-
+import { createGPTWindow, GPTWindow } from './GPTWindow';
+import { createTray } from './Tray';
 const { keyboard, Key } = require("@nut-tree/nut-js");
-
 const axios = require('axios');
-
 let mainWindow: BrowserWindow;
 
 function createMainWindow(): void {
@@ -20,7 +17,6 @@ function createMainWindow(): void {
     alwaysOnTop: true, // 置顶
     frame: false, // 无边框
     backgroundColor: '#00000000', // 背景透明
-    // 隐藏背景透明度
     transparent: true,
     autoHideMenuBar: true, // 隐藏菜单栏
     webPreferences: {
@@ -43,6 +39,7 @@ function createMainWindow(): void {
   //   调用 翻译 事件处理程序
   ipcMain.handle('perform-request', async (_, arg) => {
     const francModule = await import('franc');
+
 
     if (francModule.franc(arg.data.text) == 'cmn') {
       arg.data.target_lang = 'en';
@@ -78,17 +75,8 @@ function createMainWindow(): void {
       event.sender.send('GPT-stream-error', error);
     }
   });
-  // mainWindow.on('move', () => {
-  //   const [_, y] = mainWindow?.getPosition() || [];
-  //   if (y === 0) {
-  //     mainWindow.webContents.send('change-draggable-region', 'none');
-  //     mainWindow.setSize(500, 10);
-  //   } else {
-  //     mainWindow.webContents.send('change-draggable-region', 'drag');
-  //   }
-  // });
 
-  // mainWindow.setPosition(1200, 1);
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url);
     return { action: 'deny' };
@@ -121,19 +109,26 @@ app.whenReady().then(() => {
 
   uIOhook.start();
 });
+const os = process.platform;
+
 async function performCopy() {
-  await keyboard.pressKey(Key.LeftControl, Key.C);
-  keyboard.releaseKey(Key.LeftControl, Key.C);
+  // 检测当前是什么系统
+  if (os == 'darwin') {
+    console.log('mac')
+    await keyboard.pressKey(Key.LeftSuper, Key.C);
+    keyboard.releaseKey(Key.LeftSuper, Key.C);
+  } else {
+    await keyboard.pressKey(Key.LeftControl, Key.C);
+    keyboard.releaseKey(Key.LeftControl, Key.C);
+  }
 }
 function handleRightClick() {
   performCopy()
   setTimeout(() => {
     const copiedText = clipboard.readText();
     mainWindow.webContents.send('receive-clipboard-data', copiedText);
-    // 窗口不可见时，显示并置顶窗口
     mainWindow.show();
     mainWindow.setAlwaysOnTop(true);
-
   }, 500);
 }
 const currentPos = { x: 0, y: 0 };
@@ -144,13 +139,24 @@ uIOhook.on('mousedown', (e) => {
       if (mainWindow) {
         rightMouseDownTimer = setTimeout(() => {
           handleRightClick();
-          mainWindow.setPosition(e.x - 280, e.y - 140);
+          mainWindow.setPosition(e.x - 280, e.y - 160);
           currentPos.x = e.x;
           currentPos.y = e.y;
         }, 250);
-
       }
       break;
+    case 3: // 滚轮键
+
+      if (mainWindow) {
+        rightMouseDownTimer = setTimeout(() => {
+          handleRightClick();
+          mainWindow.setPosition(e.x - 280, e.y - 160);
+          currentPos.x = e.x;
+          currentPos.y = e.y;
+        }, 250);
+      }
+
+
   }
 });
 uIOhook.on('mousemove', (e) => {
@@ -172,7 +178,7 @@ uIOhook.on('mouseup', (e) => {
   }
 });
 uIOhook.on('keydown', (e) => {
-  if (e.altKey && e.keycode === 83) { // 83 是 'S' 的 keycode
+  if (e.altKey && e.keycode === 83) {
     if (GPTWindow) {
       if (GPTWindow.isVisible() && GPTWindow.isAlwaysOnTop()) {
         GPTWindow.minimize();
@@ -182,8 +188,8 @@ uIOhook.on('keydown', (e) => {
       }
     } else {
       createGPTWindow();
-      const copiedText = clipboard.readText();
-      ipcMain.emit('paste-clipboard', null, copiedText);
+      // const copiedText = clipboard.readText();
+      // ipcMain.emit('paste-clipboard', null, copiedText);
     }
   }
 });

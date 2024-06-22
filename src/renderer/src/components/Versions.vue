@@ -58,7 +58,7 @@ onMounted(() => {
           {
             role: 'system',
             content:
-              '给我返回纯文本格式不需要给我返回MD格式,如果我给你发送代码你只需要解释是什么意思不需要再次返回代码的内容给我,并且所有回答尽量是中文,不需要给我返回参考链接,直接给我你总结的内容即可'
+              '给我返回纯文本格式不需要给我返回MD格式不要给我返回换行符将换行换成空格,如果我给你发送代码你只需要解释是什么意思不需要再次返回代码的内容给我,并且所有回答尽量是中文,不需要给我返回参考链接,直接给我你总结的内容即可'
           },
           { role: 'user', content: res }
         ]
@@ -83,7 +83,7 @@ onUnmounted(() => {
     <div class="content">
       <p>{{ clipboardData }}</p>
       <div v-if="gptcontentvalue" class="divider"></div>
-      <p>{{ gptcontentvalue }}</p>
+      <p v-html="gptcontentvalue"></p>
     </div>
   </div>
 </template>

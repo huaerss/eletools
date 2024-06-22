@@ -24,7 +24,7 @@ export function createGPTWindow(): void {
       }
     });
 
-    GPTWindow.loadURL('https://chat.gyh.one/#/');
+    GPTWindow.loadURL('https://tokens.jerryz.com.cn/share/iqW8Czgr');
     nativeTheme.themeSource = 'dark'; // 也可以设置为 'light' 或 'system'
 
     GPTWindow.once('ready-to-show', () => {
@@ -39,19 +39,17 @@ export function createGPTWindow(): void {
 
     GPTWindow.on('closed', () => {
       GPTWindow = null;
-      ipcMain.removeAllListeners('paste-clipboard'); // Clean up the listener
-      console.log('Window closed and listeners cleaned up');
     });
 
     // Setting up the listener for paste-clipboard
-    ipcMain.on('paste-clipboard', (event, arg) => {
-      const copiedText = arg;
-      const escapedText = escapeForJavaScript(copiedText);
-      const script = `document.querySelector('#prompt-textarea').value = '${escapedText}';`;
-      GPTWindow?.webContents.executeJavaScript(script).catch(err => {
-        console.error("Script execution error:", err);
-      });
-    });
+    // ipcMain.on('paste-clipboard', (event, arg) => {
+    //   const copiedText = arg;
+    //   const escapedText = escapeForJavaScript(copiedText);
+    //   const script = `document.querySelector('#prompt-textarea').value = '${escapedText}';`;
+    //   GPTWindow?.webContents.executeJavaScript(script).catch(err => {
+    //     console.error("Script execution error:", err);
+    //   });
+    // });
   }
 }
 
