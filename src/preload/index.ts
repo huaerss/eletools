@@ -6,7 +6,7 @@ contextBridge.exposeInMainWorld('closeAPI', {
   closeWindow: () => ipcRenderer.send('close-window')
 });
 
-// Custom APIs for renderer
+
 const api = {
 
 }

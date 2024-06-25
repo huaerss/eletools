@@ -14,10 +14,14 @@ asarUnpack:
 win:
   executableName: eletools
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
+  artifactName: ${name}.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+  oneClick: false
+  perMachine: true
+  allowToChangeInstallationDirectory: true
+
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
@@ -42,6 +46,6 @@ publish:
   provider: github
   owner: "huaerss"
   repo: "eletools"
-# releaseType: "release"
+  releaseType: "release"
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/

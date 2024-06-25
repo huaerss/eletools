@@ -1,10 +1,12 @@
 // GPTWindow.ts
-import { BrowserWindow, ipcMain, nativeTheme } from 'electron';
+import { BrowserWindow, ipcMain, nativeTheme, screen } from 'electron';
 import { join } from 'path';
 
 export let GPTWindow: BrowserWindow | null = null;
 
 export function createGPTWindow(): void {
+  const scaleFactor = screen.getPrimaryDisplay().scaleFactor;
+  console.log('scaleFactor:', scaleFactor);
   if (GPTWindow) {
     if (GPTWindow.isMinimized()) {
       GPTWindow.restore();
@@ -13,8 +15,8 @@ export function createGPTWindow(): void {
     GPTWindow.focus();
   } else {
     GPTWindow = new BrowserWindow({
-      width: 1000,
-      height: 600,
+      width: 1200 / scaleFactor,
+      height: 800 / scaleFactor,
       autoHideMenuBar: true,
       show: false, // 初始化时不显示窗口
       webPreferences: {
@@ -24,17 +26,17 @@ export function createGPTWindow(): void {
       }
     });
 
-    GPTWindow.loadURL('https://tokens.jerryz.com.cn/share/iqW8Czgr');
+    GPTWindow.loadURL('https://cnprm.com/');
     nativeTheme.themeSource = 'dark'; // 也可以设置为 'light' 或 'system'
 
     GPTWindow.once('ready-to-show', () => {
-      GPTWindow?.setAlwaysOnTop(true); // Temporarily set the window on top
+      GPTWindow?.setAlwaysOnTop(true);
       GPTWindow?.show();
       setTimeout(() => {
         if (GPTWindow) {
           GPTWindow.setAlwaysOnTop(false); // Cancel the top-most setting after a short delay
         }
-      }, 200);
+      }, 500);
     });
 
     GPTWindow.on('closed', () => {

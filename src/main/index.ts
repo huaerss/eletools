@@ -1,5 +1,5 @@
 // main.ts
-import { app, BrowserWindow, ipcMain, clipboard, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, clipboard, shell, screen } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import { uIOhook } from 'uiohook-napi';
@@ -30,8 +30,11 @@ function createMainWindow(): void {
   // mainWindow.webContents.openDevTools();
 
   ipcMain.on('close-window', () => {
-    mainWindow?.close();
-    GPTWindow?.close();
+    // mainWindow?.close();
+    // GPTWindow?.close();
+    // 将mainwindow 隐藏
+    mainWindow?.hide();
+    GPTWindow?.hide()
   });
 
 
@@ -134,12 +137,23 @@ function handleRightClick() {
 const currentPos = { x: 0, y: 0 };
 let rightMouseDownTimer: any = null;
 uIOhook.on('mousedown', (e) => {
+  // 获取当前屏幕的缩放因子
+  const display = screen.getDisplayNearestPoint({ x: e.x, y: e.y });
+  const scaleFactor = display.scaleFactor;
+
+
+
   switch (e.button) {
     case 2: // 右键
       if (mainWindow) {
         rightMouseDownTimer = setTimeout(() => {
+          // 调整鼠标坐标以适应缩放因子
+          const adjustedX = Math.round(e.x / scaleFactor);
+          const adjustedY = Math.round(e.y / scaleFactor);
+
+
           handleRightClick();
-          mainWindow.setPosition(e.x - 280, e.y - 160);
+          mainWindow.setPosition(adjustedX - 280, adjustedY - 160);
           currentPos.x = e.x;
           currentPos.y = e.y;
         }, 250);
@@ -178,18 +192,15 @@ uIOhook.on('mouseup', (e) => {
   }
 });
 uIOhook.on('keydown', (e) => {
-  if (e.altKey && e.keycode === 83) {
+  if (e.altKey && (e.keycode === 83 || e.keycode === 52)) {
     if (GPTWindow) {
-      if (GPTWindow.isVisible() && GPTWindow.isAlwaysOnTop()) {
+      if (GPTWindow.isVisible()) {
         GPTWindow.minimize();
       } else {
         GPTWindow.show();
-        GPTWindow.setAlwaysOnTop(true);
       }
     } else {
       createGPTWindow();
-      // const copiedText = clipboard.readText();
-      // ipcMain.emit('paste-clipboard', null, copiedText);
     }
   }
 });

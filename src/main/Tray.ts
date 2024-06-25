@@ -31,9 +31,9 @@ export function createTray(mainWindow: BrowserWindow): void {
   tray.setToolTip('eleTools');
   tray.setContextMenu(contextMenu);
 
-  tray.on('click', () => {
-    if (mainWindow) {
-      mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
-    }
-  });
+  // tray.on('click', () => {
+  //   if (mainWindow) {
+  //     mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
+  //   }
+  // });
 }
