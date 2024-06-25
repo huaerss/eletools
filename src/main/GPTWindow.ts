@@ -1,12 +1,16 @@
 // GPTWindow.ts
-import { BrowserWindow, ipcMain, nativeTheme, screen } from 'electron';
+import { BrowserWindow, nativeTheme, screen } from 'electron';
 import { join } from 'path';
+const os = process.platform;
 
 export let GPTWindow: BrowserWindow | null = null;
 
 export function createGPTWindow(): void {
-  const scaleFactor = screen.getPrimaryDisplay().scaleFactor;
-  console.log('scaleFactor:', scaleFactor);
+  let scaleFactor = screen.getPrimaryDisplay().scaleFactor;
+  if (os === 'darwin') {
+    scaleFactor = 1;
+  }
+
   if (GPTWindow) {
     if (GPTWindow.isMinimized()) {
       GPTWindow.restore();
@@ -14,6 +18,7 @@ export function createGPTWindow(): void {
     GPTWindow.show();
     GPTWindow.focus();
   } else {
+
     GPTWindow = new BrowserWindow({
       width: 1200 / scaleFactor,
       height: 800 / scaleFactor,
@@ -43,15 +48,7 @@ export function createGPTWindow(): void {
       GPTWindow = null;
     });
 
-    // Setting up the listener for paste-clipboard
-    // ipcMain.on('paste-clipboard', (event, arg) => {
-    //   const copiedText = arg;
-    //   const escapedText = escapeForJavaScript(copiedText);
-    //   const script = `document.querySelector('#prompt-textarea').value = '${escapedText}';`;
-    //   GPTWindow?.webContents.executeJavaScript(script).catch(err => {
-    //     console.error("Script execution error:", err);
-    //   });
-    // });
+
   }
 }
 
