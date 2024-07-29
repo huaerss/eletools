@@ -54,7 +54,7 @@ function createMainWindow(): void {
 
   ipcMain.handle('GPT', async (event, arg) => {
     try {
-      const response = await axios.post('https://popai.zhucn.org/v1/chat/completions', arg.data, {
+      const response = await axios.post('https://api.tamrs.com/v1/chat/completions', arg.data, {
         headers: arg.headers,
         responseType: 'stream'
       });
