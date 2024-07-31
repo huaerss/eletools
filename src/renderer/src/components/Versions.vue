@@ -62,10 +62,6 @@ onMounted(() => {
           },
           { role: 'user', content: res }
         ]
-      },
-      headers: {
-        Authorization:
-          'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI5OTU1OTRjYi0wYTk3LTQ0YTktOTQ2MS02YmE2ZmJiNmEwNzUiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5ODgwODE1LCJpYXQiOjE3MTgzNDQ4MTV9.fpqN0GatddvOk2TVWq3-HQXHKrGoVLV2dQ5HkLGRDoOAcTSg8fJOaEGtdpgK2OUeLyKKrMavG77fMGSmVPx-ZQ'
       }
     })
     // gptcontentvalue.value = gptcontent
