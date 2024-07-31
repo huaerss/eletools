@@ -1,5 +1,5 @@
 appId: com.electron.app
-productName: eletools
+productName: mytools
 directories:
   buildResources: build
 files:
@@ -12,7 +12,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: eletools
+  executableName: mytools
 nsis:
   artifactName: ${name}.${ext}
   shortcutName: ${productName}
@@ -31,7 +31,7 @@ mac:
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: false
 dmg:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${name}.${ext}
 linux:
   target:
     - AppImage
@@ -40,7 +40,7 @@ linux:
   maintainer: electronjs.org
   category: Utility
 appImage:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${name}.${ext}
 npmRebuild: false
 publish:
   provider: github

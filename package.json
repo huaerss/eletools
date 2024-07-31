@@ -28,7 +28,7 @@
     "deasync": "^0.1.29",
     "electron-updater": "^6.1.7",
     "franc": "^6.2.0",
-    "uiohook-napi": "^1.5.3"
+    "uiohook-napi": "^1.5.4"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config": "^1.0.2",

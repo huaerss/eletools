@@ -1,4 +1,3 @@
-// main.ts
 import { app, BrowserWindow, ipcMain, clipboard, shell, screen } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
@@ -7,6 +6,8 @@ import { createGPTWindow, GPTWindow } from './GPTWindow';
 import { createTray } from './Tray';
 const { keyboard, Key } = require("@nut-tree/nut-js");
 const axios = require('axios');
+const os = process.platform;
+
 let mainWindow: BrowserWindow;
 
 function createMainWindow(): void {
@@ -115,12 +116,10 @@ app.whenReady().then(() => {
 
   uIOhook.start();
 });
-const os = process.platform;
 
 async function performCopy() {
   // 检测当前是什么系统
   if (os == 'darwin') {
-    console.log('mac')
     await keyboard.pressKey(Key.LeftSuper, Key.C);
     keyboard.releaseKey(Key.LeftSuper, Key.C);
   } else {
@@ -142,10 +141,10 @@ let rightMouseDownTimer: any = null;
 uIOhook.on('mousedown', (e) => {
   // 获取当前屏幕的缩放因子
   const display = screen.getDisplayNearestPoint({ x: e.x, y: e.y });
-  const scaleFactor = display.scaleFactor;
-
-
-
+  let scaleFactor = display.scaleFactor;
+  if (os === 'darwin') {
+    scaleFactor = 1;
+  }
   switch (e.button) {
     case 2: // 右键
       if (mainWindow) {
@@ -153,6 +152,7 @@ uIOhook.on('mousedown', (e) => {
           // 调整鼠标坐标以适应缩放因子
           const adjustedX = Math.round(e.x / scaleFactor);
           const adjustedY = Math.round(e.y / scaleFactor);
+
 
 
           handleRightClick();
