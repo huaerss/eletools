@@ -13,7 +13,7 @@ let mainWindow: BrowserWindow;
 function createMainWindow(): void {
   mainWindow = new BrowserWindow({
     width: 500,
-    height: 140,
+    height: 220,
     show: false, // 先隐藏
     alwaysOnTop: true, // 置顶
     frame: false, // 无边框
@@ -55,23 +55,23 @@ function createMainWindow(): void {
 
   ipcMain.handle('GPT', async (event, arg) => {
     try {
-      const response = await axios.post('https://cxm.us.kg/v1/chat/completions', arg.data, {
+      const response = await axios.post('https://www.gyh.one:5000/chat', arg.data, {
         headers: {
-          Authorization:
-            'Bearer y3QKxK1Ea6vNUMBblw-5DFOaY_0PBM2u4BOrBOrv_ng'
+          Authorization: 'Bearer kA3cOc6i6zhQYXDBGLChfShTlAWKQia5RwJIempcdY0'
         },
         responseType: 'stream'
       });
 
 
+
       response.data.on('data', chunk => {
         const chunkAsString = chunk.toString();
-        // 使用正则表达式匹配 content 字段的值
-        const regex = /"content":\s*"([^"]*)"/g;
+        const regex = /data:\s*([^]*)/g;
         let match;
         while ((match = regex.exec(chunkAsString)) !== null) {
-          event.sender.send('GPT-stream-chunk', match[1]);
-
+          const content = match[1].trim();
+          const cleanContent = content.replace(/^"|"$/g, '');
+          event.sender.send('GPT-stream-chunk', cleanContent);
         }
       });
 
@@ -149,29 +149,51 @@ uIOhook.on('mousedown', (e) => {
     case 2: // 右键
       if (mainWindow) {
         rightMouseDownTimer = setTimeout(() => {
+          // 获取所有显示器的信息
+          const displays = screen.getAllDisplays();
+          // 找到鼠标所在的显示器
+          const currentDisplay = screen.getDisplayNearestPoint({ x: e.x, y: e.y });
+
           // 调整鼠标坐标以适应缩放因子
           const adjustedX = Math.round(e.x / scaleFactor);
           const adjustedY = Math.round(e.y / scaleFactor);
 
+          // 计算窗口的预期位置
+          let windowX = adjustedX - 280;
+          let windowY = adjustedY - 160;
 
+          // 获取窗口大小
+          const [width, height] = mainWindow.getSize();
+
+          // 确保窗口不会超出屏幕左边界
+          windowX = Math.max(currentDisplay.bounds.x, windowX);
+
+          // 确保窗口不会超出屏幕右边界
+          windowX = Math.min(currentDisplay.bounds.x + currentDisplay.bounds.width - width, windowX);
+
+          // 确保窗口不会超出屏幕上边界
+          windowY = Math.max(currentDisplay.bounds.y, windowY);
+
+          // 确保窗口不会超出屏幕下边界
+          windowY = Math.min(currentDisplay.bounds.y + currentDisplay.bounds.height - height, windowY);
 
           handleRightClick();
-          mainWindow.setPosition(adjustedX - 280, adjustedY - 160);
+          mainWindow.setPosition(windowX, windowY);
           currentPos.x = e.x;
           currentPos.y = e.y;
         }, 250);
       }
       break;
-    case 3: // 滚轮键
+    // case 3: // 滚轮键
 
-      if (mainWindow) {
-        rightMouseDownTimer = setTimeout(() => {
-          handleRightClick();
-          mainWindow.setPosition(e.x - 280, e.y - 160);
-          currentPos.x = e.x;
-          currentPos.y = e.y;
-        }, 250);
-      }
+    //   if (mainWindow) {
+    //     rightMouseDownTimer = setTimeout(() => {
+    //       handleRightClick();
+    //       mainWindow.setPosition(e.x - 280, e.y - 160);
+    //       currentPos.x = e.x;
+    //       currentPos.y = e.y;
+    //     }, 250);
+    //   }
 
 
   }

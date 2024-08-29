@@ -22,6 +22,8 @@ declare const window: {
 }
 
 window.electron.ipcRenderer.on('GPT-stream-chunk', (event, dataString) => {
+  console.log('bbb', dataString)
+
   if (isclear) {
     gptcontentvalue.value = ''
     isclear = false
@@ -58,7 +60,7 @@ onMounted(() => {
           {
             role: 'system',
             content:
-              '给我返回纯文本格式,不要给我返回换行符将换行符号换成空格,如果我给你发送代码你只需要解释是什么意思不需要再次返回代码的内容给我,并且所有回答尽量是中文,不需要给我返回参考链接,直接给我你总结的内容即可'
+              '内容可以压缩,如果优先考虑问你的是不是关于编程的问题,不需要回复我这个问题,直接回复我你的问题就可以了'
           },
           { role: 'user', content: res }
         ]
@@ -74,41 +76,64 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="content-container">
-    <div class="content">
-      <p>{{ clipboardData }}</p>
-      <div v-if="gptcontentvalue" class="divider"></div>
-      <p v-html="gptcontentvalue"></p>
+  <div class="card-container">
+    <div class="translation-content">
+      <p class="translation">{{ clipboardData }}</p>
     </div>
+    <div v-if="gptcontentvalue" class="divider"></div>
+    <div class="gpt-content" v-html="gptcontentvalue"></div>
   </div>
 </template>
-
-<style>
-.content-container {
-  height: 100vh; /* 固定高度 */
-  overflow-y: scroll; /* 超出部分显示滚动条 */
+<style scoped>
+.card-container {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell,
+    'Helvetica Neue', sans-serif;
 }
 
-.content {
-  text-align: center;
-  padding: 10px;
+.translation-content {
+  margin-bottom: 12px;
+}
+
+.translation {
+  font-size: 14px;
+  color: #2c3e50;
+  line-height: 1.4;
+  margin: 0;
 }
 
 .divider {
-  border-top: 1px solid brown;
-  margin: 10px auto;
-  width: 90%;
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 12px 0;
 }
 
-body {
-  background-color: rgba(255, 255, 255); /* 背景半透明 */
-  margin: 0;
-  padding: 0;
+.gpt-content {
+  font-size: 14px;
+  color: #34495e;
+  line-height: 1.5;
 }
 
-p {
-  font-size: 16px;
-  color: #000;
-  font-weight: 600;
+/* 自定义滚动条 */
+.card-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.card-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.card-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 </style>
