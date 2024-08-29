@@ -54,10 +54,15 @@ function createMainWindow(): void {
   });
 
   ipcMain.handle('GPT', async (event, arg) => {
+
+
     try {
-      const response = await axios.post('https://www.gyh.one:5000/chat', arg.data, {
+      // const response = await axios.post('https://www.gyh.one:5000/chat', arg.data, {
+      //   responseType: 'stream'
+      // });
+      const response = await axios.post('https://i-i.win/v2/v1/chat/completions', arg.data, {
         headers: {
-          Authorization: 'Bearer kA3cOc6i6zhQYXDBGLChfShTlAWKQia5RwJIempcdY0'
+          "authorization": "Bearer kA3cOc6i6zhQYXDBGLChfShTlAWKQia5RwJIempcdY0"
         },
         responseType: 'stream'
       });
@@ -65,12 +70,16 @@ function createMainWindow(): void {
 
 
       response.data.on('data', chunk => {
+
         const chunkAsString = chunk.toString();
-        const regex = /data:\s*([^]*)/g;
+        const regex = /"content":"(.*?)"/gs;
+        console.log(chunkAsString);
         let match;
         while ((match = regex.exec(chunkAsString)) !== null) {
+
           const content = match[1].trim();
           const cleanContent = content.replace(/^"|"$/g, '');
+          console.log(cleanContent);
           event.sender.send('GPT-stream-chunk', cleanContent);
         }
       });

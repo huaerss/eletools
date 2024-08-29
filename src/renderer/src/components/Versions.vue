@@ -43,18 +43,22 @@ onMounted(() => {
     clipboardData.value = '翻译中...'
     gptcontentvalue.value = '查询中...'
     // 翻译接口
-    const result = await window.electron.ipcRenderer.invoke('perform-request', {
-      data: {
-        text: res,
-
-        target_lang: 'ZH'
-      }
-    })
-    clipboardData.value = result.data
+    try {
+      const result = await window.electron.ipcRenderer.invoke('perform-request', {
+        data: {
+          text: res.toString(),
+          target_lang: 'ZH'
+        }
+      })
+      clipboardData.value = result.data
+    } catch (error) {
+      console.error('Error occurred during perform-request:', error)
+      clipboardData.value = '翻译失败，请重试'
+    }
     // GPT接口
     window.electron.ipcRenderer.invoke('GPT', {
       data: {
-        model: 'gpt-4o',
+        model: 'claude-3-5-sonnet-20240620',
         stream: true,
         messages: [
           {
