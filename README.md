@@ -27,3 +27,7 @@
 翻译文档时 会给出翻译结果以及 AI回复的结果进行参考
 
 ![alt text](./README.assets/image.png)
+
+### 并且支持MD格式输出
+
+![alt text](./README.assets/image2.png)

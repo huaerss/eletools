@@ -14,7 +14,7 @@ function createMainWindow(): void {
   mainWindow = new BrowserWindow({
     width: 500,
     height: 300,
-    // show: false, // 先隐藏
+    show: false, // 先隐藏
     alwaysOnTop: true, // 置顶
     frame: false, // 无边框
     // backgroundColor: '#00000000', // 背景透明
