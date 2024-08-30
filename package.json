@@ -28,6 +28,8 @@
     "deasync": "^0.1.29",
     "electron-updater": "^6.1.7",
     "franc": "^6.2.0",
+    "markdown-it": "^14.1.0",
+    "marked": "^14.1.0",
     "uiohook-napi": "^1.5.4"
   },
   "devDependencies": {

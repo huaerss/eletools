@@ -13,11 +13,11 @@ let mainWindow: BrowserWindow;
 function createMainWindow(): void {
   mainWindow = new BrowserWindow({
     width: 500,
-    height: 220,
-    show: false, // 先隐藏
+    height: 300,
+    // show: false, // 先隐藏
     alwaysOnTop: true, // 置顶
     frame: false, // 无边框
-    backgroundColor: '#00000000', // 背景透明
+    // backgroundColor: '#00000000', // 背景透明
     transparent: true,
     autoHideMenuBar: true, // 隐藏菜单栏
     webPreferences: {
@@ -73,14 +73,15 @@ function createMainWindow(): void {
 
         const chunkAsString = chunk.toString();
         const regex = /"content":"(.*?)"/gs;
-        console.log(chunkAsString);
         let match;
         while ((match = regex.exec(chunkAsString)) !== null) {
 
           const content = match[1].trim();
-          const cleanContent = content.replace(/^"|"$/g, '');
-          console.log(cleanContent);
-          event.sender.send('GPT-stream-chunk', cleanContent);
+          console.log(content);
+
+
+          event.sender.send('GPT-stream-chunk', content);
+
         }
       });
 

@@ -31,7 +31,8 @@ export function createGPTWindow(): void {
       }
     });
 
-    GPTWindow.loadURL('https://cnprm.com/');
+    // GPTWindow.loadURL('https://cnprm.com/');
+    GPTWindow.loadURL('https://web.chatboxai.app/');
     nativeTheme.themeSource = 'dark'; // 也可以设置为 'light' 或 'system'
 
     GPTWindow.once('ready-to-show', () => {

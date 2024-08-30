@@ -9,6 +9,12 @@ import Versions from './components/Versions.vue'
 </template>
 
 <style>
+#app {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 :root {
   height: 100;
   width: 500;
