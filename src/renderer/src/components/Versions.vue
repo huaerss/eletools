@@ -90,14 +90,15 @@ onMounted(() => {
 
     const gptPromise = window.electron.ipcRenderer.invoke('GPT', {
       data: {
-        model: 'gpt-4o-2024-08-06',
+        model: 'gpt-4o',
         stream: true,
         messages: [
           {
             role: 'system',
-            content: '必须使用中文回复我，可以压缩自己回答的内容不需要特别多的内容'
+            content:
+              '必须使用中文回复我，不用需要特别多的内容可以说出主要内容就可以，优先考虑我问的是计算机内容，代码方面的问题,字数限制在150字以内'
           },
-          { role: 'user', content: res }
+          { role: 'user', content: res.toString() }
         ]
       }
     })
@@ -147,29 +148,17 @@ onUnmounted(() => {
   width: 90%;
   max-width: 900px;
   margin: auto;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    'Helvetica Neue',
-    Arial,
-    sans-serif;
   color: #ebdbb2;
   display: flex;
   flex-direction: column;
 }
 
 .translation-content {
-  max-height: 20%;
-  min-height: 60px;
+  max-height: 25%;
   overflow-y: auto;
   margin-bottom: 10px;
-  /* background-color: #282828; */
   border-radius: 12px;
   padding: 5px;
-  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
 }
 
 .translation {
@@ -191,10 +180,9 @@ onUnmounted(() => {
   line-height: 1.6;
   flex-grow: 1;
   overflow-y: auto;
+  color: #ebdbb2;
   background-color: #282828;
-  /* border-radius: 12px; */
   padding: 5px;
-  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
   margin-bottom: 10px;
 }
 
@@ -213,16 +201,15 @@ onUnmounted(() => {
 }
 
 .gpt-content :deep(code) {
-  font-family: 'Fira Code', 'Courier New', Courier, monospace;
-  background-color: #32302f;
+  /* background-color: #fe8019; */
   padding: 2px 4px;
   border-radius: 4px;
   font-size: 14px;
-  color: #fbf1c7;
+  color: #089ee4;
 }
 
 .gpt-content :deep(a) {
-  color: #83a598;
+  color: #8ec07c;
   text-decoration: none;
 }
 

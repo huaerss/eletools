@@ -13,7 +13,7 @@ let mainWindow: BrowserWindow;
 function createMainWindow(): void {
   mainWindow = new BrowserWindow({
     width: 500,
-    height: 300,
+    height: 350,
     show: false, // 先隐藏
     alwaysOnTop: true, // 置顶
     frame: false, // 无边框
@@ -43,8 +43,6 @@ function createMainWindow(): void {
   //   调用 翻译 事件处理程序
   ipcMain.handle('perform-request', async (_, arg) => {
     const francModule = await import('franc');
-
-
     if (francModule.franc(arg.data.text) == 'cmn') {
       arg.data.target_lang = 'en';
     }
@@ -54,34 +52,26 @@ function createMainWindow(): void {
   });
 
   ipcMain.handle('GPT', async (event, arg) => {
-
-
     try {
-      // const response = await axios.post('https://www.gyh.one:5000/chat', arg.data, {
-      //   responseType: 'stream'
-      // });
-      const response = await axios.post('https://i-i.win/v2/v1/chat/completions', arg.data, {
+
+      const response = await axios.post('https://api.geek-it.asia/v1/chat/completions', arg.data, {
         headers: {
-          "authorization": "Bearer kA3cOc6i6zhQYXDBGLChfShTlAWKQia5RwJIempcdY0"
+          "authorization": "Bearer sk-FyFbTf6icQyeNp2N100c265751314040B773028aD8942a12"
         },
         responseType: 'stream'
       });
-
-
-
+      response.data.on('error', (err) => {
+        console.log('err', err)
+      })
       response.data.on('data', chunk => {
-
-        const chunkAsString = chunk.toString();
-        const regex = /"content":"(.*?)"/gs;
-        let match;
-        while ((match = regex.exec(chunkAsString)) !== null) {
-
-          const content = match[1].trim();
-          console.log(content);
-
-
-          event.sender.send('GPT-stream-chunk', content);
-
+        if (chunk) {
+          const chunkAsString = chunk.toString()
+          const regex = /"content":"(.*?)"/gs;
+          let match;
+          while ((match = regex.exec(chunkAsString)) !== null) {
+            const content = match[1].trim();
+            event.sender.send('GPT-stream-chunk', content.toString());
+          }
         }
       });
 
@@ -89,7 +79,7 @@ function createMainWindow(): void {
         event.sender.send('GPT-stream-end');
       });
     } catch (error) {
-      event.sender.send('GPT-stream-error', error);
+      console.log('GPT-CATH', error.toString())
     }
   });
 

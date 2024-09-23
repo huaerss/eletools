@@ -22,7 +22,7 @@ import Versions from './components/Versions.vue'
 
 #win {
   width: 500px;
-  height: 300px;
+  height: 350px;
   text-align: center;
   /* -webkit-app-region: drag; */
 }
