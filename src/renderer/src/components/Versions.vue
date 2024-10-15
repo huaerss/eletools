@@ -90,7 +90,6 @@ onMounted(() => {
 
     const gptPromise = window.electron.ipcRenderer.invoke('GPT', {
       data: {
-        model: 'gpt-4o',
         stream: true,
         messages: [
           {

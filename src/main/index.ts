@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, clipboard, shell, screen } from 'electron';
 import { join } from 'path';
+import fs from 'fs';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import { uIOhook } from 'uiohook-napi';
 import { createGPTWindow, GPTWindow } from './GPTWindow';
@@ -39,7 +40,10 @@ function createMainWindow(): void {
   });
 
 
-
+  const appPath = app.getAppPath()
+  const configPath = join(appPath, 'config.json');
+  const data = fs.readFileSync(configPath, 'utf-8');
+  const config = JSON.parse(data);
   //   调用 翻译 事件处理程序
   ipcMain.handle('perform-request', async (_, arg) => {
     const francModule = await import('franc');
@@ -54,9 +58,12 @@ function createMainWindow(): void {
   ipcMain.handle('GPT', async (event, arg) => {
     try {
 
-      const response = await axios.post('https://api.geek-it.asia/v1/chat/completions', arg.data, {
+      const response = await axios.post(config.requestUrl, {
+        ...arg.data,
+        model: config.requestModel,
+      }, {
         headers: {
-          "authorization": "Bearer sk-FyFbTf6icQyeNp2N100c265751314040B773028aD8942a12"
+          "authorization": config.requestToken
         },
         responseType: 'stream'
       });
@@ -65,16 +72,19 @@ function createMainWindow(): void {
       })
       response.data.on('data', chunk => {
         if (chunk) {
-          const chunkAsString = chunk.toString()
-          const regex = /"content":"(.*?)"/gs;
-          let match;
-          while ((match = regex.exec(chunkAsString)) !== null) {
-            const content = match[1].trim();
-            event.sender.send('GPT-stream-chunk', content.toString());
+          const chunkAsString = chunk.toString().trim();
+          const jsonStr = chunkAsString.replace(/^data: /, '');
+          try {
+            const data = JSON.parse(jsonStr);
+            if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
+              const content = data.choices[0].delta.content;
+              event.sender.send('GPT-stream-chunk', content);
+            }
+          } catch (error) {
+            console.error('Error parsing JSON:', error);
           }
         }
       });
-
       response.data.on('end', () => {
         event.sender.send('GPT-stream-end');
       });
@@ -101,7 +111,7 @@ function createMainWindow(): void {
 app.whenReady().then(() => {
   createMainWindow();
   createTray(mainWindow);
-  electronApp.setAppUserModelId('gptele');
+  electronApp.setAppUserModelId('gptele');// 设置应用图标
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window);
