@@ -1,6 +1,0 @@
-{
-  "LoadURL": "https://ai.xeryx.top/",
-  "requestUrl": "https://api.aliyy.cc/v1/chat/completions",
-  "requestToken": "Bearer OpenAI access token",
-  "requestModel": "gpt-4o-2024-08-06"
-}

@@ -1,5 +1,5 @@
 import { app, BrowserWindow, ipcMain, clipboard, shell, screen } from 'electron';
-import { join } from 'path';
+import path, { join } from 'path';
 import fs from 'fs';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import { uIOhook } from 'uiohook-napi';
@@ -8,6 +8,7 @@ import { createTray } from './Tray';
 const { keyboard, Key } = require("@nut-tree/nut-js");
 const axios = require('axios');
 const os = process.platform;
+import config from './readConfig';
 
 let mainWindow: BrowserWindow;
 
@@ -40,10 +41,11 @@ function createMainWindow(): void {
   });
 
 
-  const appPath = app.getAppPath()
-  const configPath = join(appPath, 'config.json');
-  const data = fs.readFileSync(configPath, 'utf-8');
-  const config = JSON.parse(data);
+
+
+
+
+
   //   调用 翻译 事件处理程序
   ipcMain.handle('perform-request', async (_, arg) => {
     const francModule = await import('franc');

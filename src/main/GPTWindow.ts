@@ -3,6 +3,7 @@ import { BrowserWindow, nativeTheme, screen, app } from 'electron';
 import { join } from 'path';
 import { readFileSync } from 'fs'; // 引入 fs 模块
 const os = process.platform;
+import config from './readConfig';
 
 export let GPTWindow: BrowserWindow | null = null;
 
@@ -20,7 +21,8 @@ export function createGPTWindow(): void {
     GPTWindow.focus();
   }
   else {
-    const url = getDynamicURL();
+    // const url = getDynamicURL();
+    const url = config.LoadURL;
     const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 Edg/129.0.0.0';
 
     // 创建浏览器窗口
@@ -37,7 +39,6 @@ export function createGPTWindow(): void {
     });
     GPTWindow.loadURL(url, {
       userAgent: userAgent,
-      httpReferrer: 'https://ai.xeryx.top/',
     });
 
 
@@ -68,25 +69,5 @@ export function createGPTWindow(): void {
     GPTWindow.on('closed', () => {
       GPTWindow = null;
     });
-  }
-}
-function getDynamicURL(): string {
-  try {
-    // 假设文件路径为当前目录的 config.json
-    const appPath = app.getAppPath();
-    const configPath = join(appPath, 'config.json');
-
-
-    // 读取文件并解析 JSON 内容
-    const data = readFileSync(configPath, 'utf-8');
-    const config = JSON.parse(data);
-    console.log(config.LoadURL)
-
-    // 返回配置文件中的 URL，如果没有则返回默认 URL
-    return config.LoadURL || 'https://ai.xeryx.top/';
-  } catch (error) {
-    console.error('读取配置文件失败:', error);
-    // 发生错误时返回默认 URL
-    return 'https://ai.xeryx.top/';
   }
 }
