@@ -1,6 +1,5 @@
 import { app, BrowserWindow, ipcMain, clipboard, shell, screen } from 'electron';
 import path, { join } from 'path';
-import fs from 'fs';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import { uIOhook } from 'uiohook-napi';
 import { createGPTWindow, GPTWindow } from './GPTWindow';
@@ -11,6 +10,7 @@ const os = process.platform;
 import config from './readConfig';
 
 let mainWindow: BrowserWindow;
+let settingsWindow: BrowserWindow | null = null
 
 function createMainWindow(): void {
   mainWindow = new BrowserWindow({
@@ -19,7 +19,6 @@ function createMainWindow(): void {
     show: false, // 先隐藏
     alwaysOnTop: true, // 置顶
     frame: false, // 无边框
-    // backgroundColor: '#00000000', // 背景透明
     transparent: true,
     autoHideMenuBar: true, // 隐藏菜单栏
     webPreferences: {
@@ -30,20 +29,13 @@ function createMainWindow(): void {
     }
   });
 
-  // mainWindow.webContents.openDevTools();
+
+  mainWindow.webContents.openDevTools();
 
   ipcMain.on('close-window', () => {
-    // mainWindow?.close();
-    // GPTWindow?.close();
-    // 将mainwindow 隐藏
     mainWindow?.hide();
     GPTWindow?.hide()
   });
-
-
-
-
-
 
 
   //   调用 翻译 事件处理程序
@@ -59,7 +51,6 @@ function createMainWindow(): void {
 
   ipcMain.handle('GPT', async (event, arg) => {
     try {
-
       const response = await axios.post(config.requestUrl, {
         ...arg.data,
         model: config.requestModel,
@@ -69,32 +60,41 @@ function createMainWindow(): void {
         },
         responseType: 'stream'
       });
-      response.data.on('error', (err) => {
-        console.log('err', err)
-      })
+
       response.data.on('data', chunk => {
         if (chunk) {
-          const chunkAsString = chunk.toString().trim();
-          const jsonStr = chunkAsString.replace(/^data: /, '');
-          try {
-            const data = JSON.parse(jsonStr);
-            if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
-              const content = data.choices[0].delta.content;
-              event.sender.send('GPT-stream-chunk', content);
+          const lines = chunk.toString().split('\n');
+          for (const line of lines) {
+            if (line.trim() === '') continue;
+            if (line.trim() === 'data: [DONE]') {
+              event.sender.send('GPT-stream-end');
+              return;
             }
-          } catch (error) {
-            console.error('Error parsing JSON:', error);
+            if (line.startsWith('data: ')) {
+              try {
+                const jsonStr = line.replace(/^data: /, '').trim();
+                const data = JSON.parse(jsonStr);
+                if (data.choices?.[0]?.delta?.content) {
+                  event.sender.send('GPT-stream-chunk', data.choices[0].delta.content);
+                }
+              } catch (error) {
+                // 忽略解析错误，继续处理下一行
+                continue;
+              }
+            }
           }
         }
       });
-      response.data.on('end', () => {
-        event.sender.send('GPT-stream-end');
+
+      response.data.on('error', (err) => {
+        console.error('Stream error:', err);
+        event.sender.send('GPT-stream-error', err.message);
       });
     } catch (error) {
-      console.log('GPT-CATH', error.toString())
+      console.error('GPT-ERROR:', error.toString());
+      event.sender.send('GPT-stream-error', error.data.message);
     }
   });
-
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url);
@@ -139,96 +139,83 @@ async function performCopy() {
     keyboard.releaseKey(Key.LeftControl, Key.C);
   }
 }
-function handleRightClick() {
+function handleRightClick(type: string) {
   performCopy()
   setTimeout(() => {
     const copiedText = clipboard.readText();
     mainWindow.webContents.send('receive-clipboard-data', copiedText);
+    mainWindow.webContents.send('should-show', type);
     mainWindow.show();
     mainWindow.setAlwaysOnTop(true);
   }, 500);
 }
-const currentPos = { x: 0, y: 0 };
-let rightMouseDownTimer: any = null;
-uIOhook.on('mousedown', (e) => {
-  // 获取当前屏幕的缩放因子
-  const display = screen.getDisplayNearestPoint({ x: e.x, y: e.y });
-  let scaleFactor = display.scaleFactor;
-  if (os === 'darwin') {
-    scaleFactor = 1;
-  }
-  switch (e.button) {
-    case 2: // 右键
-      if (mainWindow) {
-        rightMouseDownTimer = setTimeout(() => {
-          // 获取所有显示器的信息
-          const displays = screen.getAllDisplays();
-          // 找到鼠标所在的显示器
-          const currentDisplay = screen.getDisplayNearestPoint({ x: e.x, y: e.y });
 
-          // 调整鼠标坐标以适应缩放因子
-          const adjustedX = Math.round(e.x / scaleFactor);
-          const adjustedY = Math.round(e.y / scaleFactor);
-
-          // 计算窗口的预期位置
-          let windowX = adjustedX - 280;
-          let windowY = adjustedY - 160;
-
-          // 获取窗口大小
-          const [width, height] = mainWindow.getSize();
-
-          // 确保窗口不会超出屏幕左边界
-          windowX = Math.max(currentDisplay.bounds.x, windowX);
-
-          // 确保窗口不会超出屏幕右边界
-          windowX = Math.min(currentDisplay.bounds.x + currentDisplay.bounds.width - width, windowX);
-
-          // 确保窗口不会超出屏幕上边界
-          windowY = Math.max(currentDisplay.bounds.y, windowY);
-
-          // 确保窗口不会超出屏幕下边界
-          windowY = Math.min(currentDisplay.bounds.y + currentDisplay.bounds.height - height, windowY);
-
-          handleRightClick();
-          mainWindow.setPosition(windowX, windowY);
-          currentPos.x = e.x;
-          currentPos.y = e.y;
-        }, 250);
-      }
-      break;
-    // case 3: // 滚轮键
-
-    //   if (mainWindow) {
-    //     rightMouseDownTimer = setTimeout(() => {
-    //       handleRightClick();
-    //       mainWindow.setPosition(e.x - 280, e.y - 160);
-    //       currentPos.x = e.x;
-    //       currentPos.y = e.y;
-    //     }, 250);
-    //   }
-
-
-  }
-});
-uIOhook.on('mousemove', (e) => {
-  if (mainWindow && mainWindow.isVisible()) {
-    //  如果鼠标移动的距离超过 300，隐藏窗口
-    if (Math.abs(e.x - currentPos.x) > 400 || Math.abs(e.y - currentPos.y) > 400) {
-      mainWindow.hide();
-    }
-  }
-}
-);
-
-uIOhook.on('mouseup', (e) => {
-  if (e.button === 2) {
-    if (rightMouseDownTimer) {
-      clearTimeout(rightMouseDownTimer);
-      rightMouseDownTimer = null;
-    }
-  }
-});
 uIOhook.on('keydown', (e) => {
+  // Alt + T 翻译
+  if (e.altKey && e.keycode === 20) { // 20是T键的keycode
+    if (mainWindow) {
+      const mousePos = screen.getCursorScreenPoint();
+      const display = screen.getDisplayNearestPoint({ x: mousePos.x, y: mousePos.y });
+      let scaleFactor = display.scaleFactor;
+      if (os === 'darwin') {
+        scaleFactor = 1;
+      }
+
+      // 调整鼠标坐标以适应缩放因子
+      const adjustedX = Math.round(mousePos.x / scaleFactor);
+      const adjustedY = Math.round(mousePos.y / scaleFactor);
+
+      // 计算窗口的预期位置
+      let windowX = adjustedX - 280;
+      let windowY = adjustedY - 160;
+
+      // 获取窗口大小
+      const [width, height] = mainWindow.getSize();
+
+      // 确保窗口不会超出屏幕边界
+      windowX = Math.max(display.bounds.x, windowX);
+      windowX = Math.min(display.bounds.x + display.bounds.width - width, windowX);
+      windowY = Math.max(display.bounds.y, windowY);
+      windowY = Math.min(display.bounds.y + display.bounds.height - height, windowY);
+
+      handleRightClick('1');
+      mainWindow.setPosition(windowX, windowY);
+    }
+  }
+
+  // Alt + G GPT
+  if (e.altKey && e.keycode === 34) { // 34是G键的keycode
+    if (mainWindow) {
+      const mousePos = screen.getCursorScreenPoint();
+      const display = screen.getDisplayNearestPoint({ x: mousePos.x, y: mousePos.y });
+      let scaleFactor = display.scaleFactor;
+      if (os === 'darwin') {
+        scaleFactor = 1;
+      }
+
+      // 调整鼠标坐标以适应缩放因子
+      const adjustedX = Math.round(mousePos.x / scaleFactor);
+      const adjustedY = Math.round(mousePos.y / scaleFactor);
+
+      // 计算窗口的预期位置
+      let windowX = adjustedX - 280;
+      let windowY = adjustedY - 160;
+
+      // 获取窗口大小
+      const [width, height] = mainWindow.getSize();
+
+      // 确保窗口不会超出屏幕边界
+      windowX = Math.max(display.bounds.x, windowX);
+      windowX = Math.min(display.bounds.x + display.bounds.width - width, windowX);
+      windowY = Math.max(display.bounds.y, windowY);
+      windowY = Math.min(display.bounds.y + display.bounds.height - height, windowY);
+
+      handleRightClick('2');
+      mainWindow.setPosition(windowX, windowY);
+    }
+  }
+
+  // 保留原有的 Alt+S 逻辑
   if (e.altKey && (e.keycode === 83 || e.keycode === 52)) {
     if (GPTWindow) {
       if (GPTWindow.isVisible()) {
@@ -241,8 +228,34 @@ uIOhook.on('keydown', (e) => {
     }
   }
 });
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
 });
+
+// 保存快捷键设置
+ipcMain.on('save-shortcuts', (_event, shortcuts) => {
+  try {
+    store.set('shortcuts', shortcuts)
+  } catch (error) {
+    console.error('保存快捷键设置失败:', error)
+  }
+})
+
+// 获取快捷键设置
+ipcMain.handle('get-shortcuts', () => {
+  try {
+    return store.get('shortcuts') || {
+      translate: 'Alt+1',
+      gpt: 'Alt+2'
+    }
+  } catch (error) {
+    console.error('获取快捷键设置失败:', error)
+    return {
+      translate: 'Alt+1',
+      gpt: 'Alt+2'
+    }
+  }
+})

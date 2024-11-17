@@ -18,10 +18,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeClipboardDataListener: () => {
     ipcRenderer.removeAllListeners('receive-clipboard-data');
   },
+  onShouldShow: (callback) => {
+    ipcRenderer.on('should-show', (_, data) => callback(data));
+  }
 });
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
+
+
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
@@ -36,3 +38,14 @@ if (process.contextIsolated) {
   // @ts-ignore (define in dts)
   window.electronAPI = api; // 如果没有启用上下文隔离
 }
+
+contextBridge.exposeInMainWorld('electron', {
+  ipcRenderer: {
+    send: (channel: string, data: any) => {
+      ipcRenderer.send(channel, data)
+    },
+    invoke: (channel: string, data?: any) => {
+      return ipcRenderer.invoke(channel, data)
+    }
+  }
+})

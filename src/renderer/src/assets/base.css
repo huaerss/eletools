@@ -21,15 +21,17 @@
   --ev-button-alt-hover-border: transparent;
   --ev-button-alt-hover-text: var(--ev-c-text-1);
   --ev-button-alt-hover-bg: var(--ev-c-gray-2);
+
+  --color-background: #1c1c1c;
+  --color-primary: #2c2c2c;
+  --color-text: #ffffff;
+  --color-hover: #404040;
+  --color-border: #404040;
+  --color-warning: #fd8282;
 }
 
 :root {
- --color-background: #FFFAE8;
-  /*
-  --color-background-soft: var(--ev-c-black-soft);
-  --color-background-mute: var(--ev-c-black-mute); */
-
-  /* --color-text: var(--ev-c-black); */
+  --color-background: black;
 }
 
 *,

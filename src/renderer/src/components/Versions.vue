@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 import MarkdownIt from 'markdown-it'
+import { useRouter } from 'vue-router'
+import { store } from '../store/translate'
 
-const clipboardData = ref('左键选中需要翻译的文本,右键长按即可翻译')
-const gptcontentvalue = ref('')
+// 使用 store 中的状态替换本地的 ref
+const { clipboardData, gptcontentvalue, shouldShow } = store
+
 const md = new MarkdownIt()
-
 const processRawContent = (content: string): string => {
   // 替换 '\n' 为实际的换行符，同时处理其他可能的转义字符
   return content
@@ -23,6 +25,7 @@ declare const window: {
   electronAPI: {
     onClipboardDataReceived: (callback: (res: string) => void) => void
     removeClipboardDataListener: () => void
+    onShouldShow: (callback: (res: string) => void) => void
   }
   electron: {
     ipcRenderer: {
@@ -38,6 +41,9 @@ declare const window: {
 }
 let accumulatedMarkdown = ''
 
+const closeWindow = () => {
+  window.closeAPI.closeWindow()
+}
 const handleGPTStreamChunk = (event: any, dataString: string) => {
   if (isclear) {
     accumulatedMarkdown = ''
@@ -50,7 +56,6 @@ const handleGPTStreamChunk = (event: any, dataString: string) => {
 
   accumulatedMarkdown += processedChunk
 
-  // 尝试渲染累积的 Markdown
   try {
     const renderedContent = md.render(accumulatedMarkdown)
     gptcontentvalue.value = renderedContent
@@ -66,6 +71,13 @@ const handleGPTStreamEnd = () => {
   gptcontentvalue.value = md.render(accumulatedMarkdown)
 }
 
+const router = useRouter()
+
+// 修改设置按钮的处理函数
+const openSettings = () => {
+  router.push('/settings')
+}
+
 onMounted(() => {
   document.addEventListener('keyup', (event) => {
     if (event.key === 'Escape') {
@@ -76,47 +88,56 @@ onMounted(() => {
   window.electron.ipcRenderer.on('GPT-stream-chunk', handleGPTStreamChunk)
   window.electron.ipcRenderer.on('GPT-stream-end', handleGPTStreamEnd)
 
+  // 使用 store 中的状态，不需要创建新的 ref
+  let clipboardText = ''
+
+  window.electronAPI.onShouldShow((res) => {
+    shouldShow.value = res as '1' | '2'
+    if (shouldShow.value === '1') {
+      const translationPromise = window.electron.ipcRenderer.invoke('perform-request', {
+        data: {
+          text: clipboardText,
+          target_lang: 'ZH'
+        }
+      })
+      translationPromise
+        .then((result) => {
+          clipboardData.value = result.data
+        })
+        .catch((error) => {
+          console.error('Translation error:', error)
+          clipboardData.value = '翻译失败，请重试'
+        })
+    } else if (shouldShow.value === '2') {
+      console.log('准备调用 GPT')
+      const gptPromise = window.electron.ipcRenderer.invoke('GPT', {
+        data: {
+          stream: true,
+          messages: [
+            {
+              role: 'system',
+              content: '必须使用中文回复我，不用需要特别多的内容可以说出主要内容就可以，优先考虑我问的是计算机内容，代码方面的问题,字数限制在150字以内'
+            },
+            { role: 'user', content: clipboardText }
+          ]
+        }
+      })
+      gptPromise.catch((error) => {
+        console.error('GPT error:', error)
+        gptcontentvalue.value = 'GPT 查询失败，请重试'
+      })
+    }
+  })
+
   window.electronAPI.onClipboardDataReceived(async (res) => {
+    clipboardText = res
     clipboardData.value = '翻译中...'
     gptcontentvalue.value = '查询中...'
+  })
 
-    // 同时发送翻译和GPT请求
-    const translationPromise = window.electron.ipcRenderer.invoke('perform-request', {
-      data: {
-        text: res.toString(),
-        target_lang: 'ZH'
-      }
-    })
-
-    const gptPromise = window.electron.ipcRenderer.invoke('GPT', {
-      data: {
-        stream: true,
-        messages: [
-          {
-            role: 'system',
-            content:
-              '必须使用中文回复我，不用需要特别多的内容可以说出主要内容就可以，优先考虑我问的是计算机内容，代码方面的问题,字数限制在150字以内'
-          },
-          { role: 'user', content: res.toString() }
-        ]
-      }
-    })
-
-    // 处理翻译结果
-    translationPromise
-      .then((result) => {
-        clipboardData.value = result.data
-      })
-      .catch((error) => {
-        console.error('Translation error:', error)
-        clipboardData.value = '翻译失败，请重试'
-      })
-
-    // GPT结果通过事件监听器处理，这里不需要额外处理
-    gptPromise.catch((error) => {
-      console.error('GPT error:', error)
-      gptcontentvalue.value = 'GPT 查询失败，请重试'
-    })
+  // 添加对 shouldShow 的监听
+  watch(shouldShow, (newValue) => {
+    console.log('shouldShow 变化为:', newValue)
   })
 })
 
@@ -128,153 +149,112 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="card-container">
-    <div class="translation-content">
-      <p class="translation">{{ clipboardData }}</p>
+  <div class="container">
+    <div class="header">
+      <div class="settings-button" @click="openSettings">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path
+            fill="currentColor"
+            d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"
+          />
+        </svg>
+      </div>
+      <div class="close-button" @click="closeWindow">×</div>
     </div>
-    <div v-if="gptcontentvalue" class="divider"></div>
-    <div class="gpt-content" v-html="gptcontentvalue"></div>
+
+    <div class="content">
+      <div v-if="shouldShow === '1'" class="text">{{ clipboardData }}</div>
+      <div v-if="shouldShow === '2'" class="text" v-html="gptcontentvalue"></div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.card-container {
-  background-color: #282828;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  padding: 10px;
-  height: 90vh;
-  width: 90%;
-  max-width: 900px;
-  margin: auto;
-  color: #ebdbb2;
+.container {
+  width: 500px;
+  background: #1c1c1c;
+  border-radius: 8px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.translation-content {
-  max-height: 25%;
-  overflow-y: auto;
-  margin-bottom: 10px;
-  border-radius: 12px;
-  padding: 5px;
-}
-
-.translation {
-  font-size: 16px;
-  color: #ebdbb2;
-  line-height: 1.6;
-  margin: 0;
-}
-
-.divider {
-  height: 1px;
-  background-color: #504945;
-  margin: 5px 0;
+.header {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #2c2c2c;
   flex-shrink: 0;
 }
 
-.gpt-content {
-  font-size: 16px;
-  line-height: 1.6;
-  flex-grow: 1;
+.settings-button,
+.close-button {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #ffffff;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.settings-button:hover,
+.close-button:hover {
+  background: #404040;
+}
+
+.close-button {
+  font-size: 18px;
+}
+
+.content {
+  flex: 1;
+  margin: 12px;
   overflow-y: auto;
-  color: #ebdbb2;
-  background-color: #282828;
-  padding: 5px;
-  margin-bottom: 10px;
+  min-height: 80px;
 }
 
-.gpt-content :deep(pre) {
-  background-color: #32302f;
-  border: 1px solid #504945;
-  border-radius: 8px;
-  padding: 16px;
-  overflow-x: auto;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  text-align: left;
-  width: 100%;
-  box-sizing: border-box;
-  margin: 12px 0;
-}
-
-.gpt-content :deep(code) {
-  /* background-color: #fe8019; */
-  padding: 2px 4px;
-  border-radius: 4px;
+.text {
+  color: #ffffff;
+  line-height: 1;
   font-size: 14px;
-  color: #089ee4;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: monospace;
+  text-align: left;
 }
 
-.gpt-content :deep(a) {
-  color: #8ec07c;
-  text-decoration: none;
-}
-
-.gpt-content :deep(a:hover) {
-  text-decoration: underline;
-}
-
-.gpt-content :deep(p) {
-  margin-bottom: 14px;
-}
-
-.gpt-content :deep(ul),
-.gpt-content :deep(ol) {
-  padding-left: 20px;
-  margin-bottom: 14px;
-}
-
-.gpt-content :deep(h1),
-.gpt-content :deep(h2),
-.gpt-content :deep(h3),
-.gpt-content :deep(h4),
-.gpt-content :deep(h5),
-.gpt-content :deep(h6) {
-  color: #b8bb26;
-  margin-top: 28px;
-  margin-bottom: 14px;
-}
-
-/* 自定义滚动条 */
-.card-container::-webkit-scrollbar,
-.translation-content::-webkit-scrollbar,
-.gpt-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.card-container::-webkit-scrollbar-track,
-.translation-content::-webkit-scrollbar-track,
-.gpt-content::-webkit-scrollbar-track {
-  background: #282828;
+:deep(pre) {
+  background: #2c2c2c;
+  padding: 12px;
   border-radius: 4px;
+  overflow-x: auto;
+  margin: 8px 0;
 }
 
-.card-container::-webkit-scrollbar-thumb,
-.translation-content::-webkit-scrollbar-thumb,
-.gpt-content::-webkit-scrollbar-thumb {
-  background: #504945;
-  border-radius: 4px;
+:deep(code) {
+  color: #fd8282;
+  font-family: monospace;
 }
 
-.card-container::-webkit-scrollbar-thumb:hover,
-.translation-content::-webkit-scrollbar-thumb:hover,
-.gpt-content::-webkit-scrollbar-thumb:hover {
-  background: #665c54;
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 6px;
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .card-container {
-    width: 95%;
-    padding: 16px;
-    height: 95vh;
-  }
+::-webkit-scrollbar-track {
+  background: transparent;
+}
 
-  .translation,
-  .gpt-content {
-    font-size: 15px;
-  }
+::-webkit-scrollbar-thumb {
+  background: #404040;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #505050;
 }
 </style>

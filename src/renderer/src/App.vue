@@ -1,35 +1,37 @@
-<script setup lang="ts">
-import Versions from './components/Versions.vue'
-</script>
-
 <template>
-  <div id="win">
-    <Versions />
-  </div>
+  <router-view></router-view>
 </template>
 
 <style>
+body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 #app {
+  width: 100vw;
   height: 100vh;
   display: flex;
-  justify-content: center;
   align-items: center;
-}
-:root {
-  height: 100;
-  width: 500;
+  justify-content: center;
+  overflow: hidden;
 }
 
-#win {
-  width: 500px;
-  height: 350px;
-  text-align: center;
-  /* -webkit-app-region: drag; */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.draggable {
-  /* -webkit-app-region: drag; */
-  height: 200;
-  width: 500;
+/* 禁用文本选择 */
+.header,
+.back-button,
+.settings-button,
+.close-button {
+  user-select: none;
 }
 </style>

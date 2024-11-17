@@ -1,6 +1,6 @@
 {
   "LoadURL": "https://gyh.one",
   "requestUrl": "https://api.aliyy.cc/v1/chat/completions",
-  "requestToken": "Bearer YOUR_TOKEN",
-  "requestModel": "gpt-4o-2024-08-06"
+  "requestToken": "Bearer sk-rjNhduuzVzpoEkVRxUnoRMDWbBWigRWu",
+  "requestModel": "gpt-4o"
 }

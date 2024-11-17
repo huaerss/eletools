@@ -1,7 +1,5 @@
 // GPTWindow.ts
 import { BrowserWindow, nativeTheme, screen, app } from 'electron';
-import { join } from 'path';
-import { readFileSync } from 'fs'; // 引入 fs 模块
 const os = process.platform;
 import config from './readConfig';
 
@@ -21,7 +19,6 @@ export function createGPTWindow(): void {
     GPTWindow.focus();
   }
   else {
-    // const url = getDynamicURL();
     const url = config.LoadURL;
     const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 Edg/129.0.0.0';
 
