@@ -29,8 +29,8 @@ function createMainWindow(): void {
     }
   });
 
-
-  mainWindow.webContents.openDevTools();
+  //  控制台
+  // mainWindow.webContents.openDevTools();
 
   ipcMain.on('close-window', () => {
     mainWindow?.hide();
@@ -40,13 +40,19 @@ function createMainWindow(): void {
 
   //   调用 翻译 事件处理程序
   ipcMain.handle('perform-request', async (_, arg) => {
-    const francModule = await import('franc');
-    if (francModule.franc(arg.data.text) == 'cmn') {
-      arg.data.target_lang = 'en';
-    }
 
-    const response = await axios.post('https://api.deeplx.org/0oWyL9jvBql-MRdzVMbT83CY-cej8rgAFwThk9F7xrw/translate', arg.data);
-    return response.data;
+    try {
+      const francModule = await import('franc');
+      if (francModule.franc(arg.data.text) == 'cmn') {
+        arg.data.target_lang = 'en';
+      }
+
+      const response = await axios.post('https://api.deeplx.org/0oWyL9jvBql-MRdzVMbT83CY-cej8rgAFwThk9F7xrw/translate', arg.data);
+      return response.data;
+    } catch (error) {
+      console.error('翻译失败:', error);
+      return error.data;
+    }
   });
 
   ipcMain.handle('GPT', async (event, arg) => {
@@ -152,7 +158,7 @@ function handleRightClick(type: string) {
 
 uIOhook.on('keydown', (e) => {
   // Alt + T 翻译
-  if (e.altKey && e.keycode === 20) { // 20是T键的keycode
+  if (e.altKey && e.keycode === 2) { // 20是T键的keycode
     if (mainWindow) {
       const mousePos = screen.getCursorScreenPoint();
       const display = screen.getDisplayNearestPoint({ x: mousePos.x, y: mousePos.y });
@@ -184,7 +190,7 @@ uIOhook.on('keydown', (e) => {
   }
 
   // Alt + G GPT
-  if (e.altKey && e.keycode === 34) { // 34是G键的keycode
+  if (e.altKey && e.keycode === 3) { // 34是G键的keycode
     if (mainWindow) {
       const mousePos = screen.getCursorScreenPoint();
       const display = screen.getDisplayNearestPoint({ x: mousePos.x, y: mousePos.y });
@@ -237,25 +243,25 @@ app.on('window-all-closed', () => {
 
 // 保存快捷键设置
 ipcMain.on('save-shortcuts', (_event, shortcuts) => {
-  try {
-    store.set('shortcuts', shortcuts)
-  } catch (error) {
-    console.error('保存快捷键设置失败:', error)
-  }
+  // try {
+  //   store.set('shortcuts', shortcuts)
+  // } catch (error) {
+  //   console.error('保存快捷键设置失败:', error)
+  // }
 })
 
 // 获取快捷键设置
 ipcMain.handle('get-shortcuts', () => {
-  try {
-    return store.get('shortcuts') || {
-      translate: 'Alt+1',
-      gpt: 'Alt+2'
-    }
-  } catch (error) {
-    console.error('获取快捷键设置失败:', error)
-    return {
-      translate: 'Alt+1',
-      gpt: 'Alt+2'
-    }
-  }
+  // try {
+  //   return store.get('shortcuts') || {
+  //     translate: 'Alt+1',
+  //     gpt: 'Alt+2'
+  //   }
+  // } catch (error) {
+  //   console.error('获取快捷键设置失败:', error)
+  //   return {
+  //     translate: 'Alt+1',
+  //     gpt: 'Alt+2'
+  //   }
+  // }
 })

@@ -116,7 +116,8 @@ onMounted(() => {
           messages: [
             {
               role: 'system',
-              content: '必须使用中文回复我，不用需要特别多的内容可以说出主要内容就可以，优先考虑我问的是计算机内容，代码方面的问题,字数限制在150字以内'
+              content:
+                '必须使用中文回复我，不用需要特别多的内容可以说出主要内容就可以，优先考虑我问的是计算机内容，代码方面的问题,字数限制在150字以内'
             },
             { role: 'user', content: clipboardText }
           ]
@@ -150,7 +151,8 @@ onUnmounted(() => {
 
 <template>
   <div class="container">
-    <div class="header">
+    <div class="header" data-tauri-drag-region>
+      <div class="drag-area"></div>
       <div class="settings-button" @click="openSettings">
         <svg viewBox="0 0 24 24" width="16" height="16">
           <path
@@ -186,10 +188,17 @@ onUnmounted(() => {
   padding: 6px 10px;
   background: #2c2c2c;
   flex-shrink: 0;
+  -webkit-app-region: drag;
+}
+
+.drag-area {
+  flex: 1;
+  height: 20px;
 }
 
 .settings-button,
 .close-button {
+  -webkit-app-region: no-drag;
   width: 20px;
   height: 20px;
   display: flex;
@@ -219,12 +228,15 @@ onUnmounted(() => {
 
 .text {
   color: #ffffff;
-  line-height: 1;
+  line-height: 1.6;
   font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
   white-space: pre-wrap;
   word-break: break-word;
-  font-family: monospace;
   text-align: left;
+  letter-spacing: 0.2px;
 }
 
 :deep(pre) {
@@ -233,11 +245,13 @@ onUnmounted(() => {
   border-radius: 4px;
   overflow-x: auto;
   margin: 8px 0;
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace;
 }
 
 :deep(code) {
   color: #fd8282;
-  font-family: monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace;
+  font-size: 13px;
 }
 
 /* 滚动条样式 */

@@ -25,11 +25,11 @@ const handleKeyPress = (e: KeyboardEvent) => {
   let key = e.key
   const specialKeys: Record<string, string> = {
     ' ': 'Space',
-    'Control': 'Ctrl',
-    'ArrowUp': '↑',
-    'ArrowDown': '↓',
-    'ArrowLeft': '←',
-    'ArrowRight': '→'
+    Control: 'Ctrl',
+    ArrowUp: '↑',
+    ArrowDown: '↓',
+    ArrowLeft: '←',
+    ArrowRight: '→'
   }
 
   if (key in specialKeys) {
@@ -48,30 +48,19 @@ const handleKeyPress = (e: KeyboardEvent) => {
     isRecording.value = null
     window.removeEventListener('keydown', handleKeyPress)
 
-    window.electron.ipcRenderer.send('save-shortcuts', {
-      translate: translateShortcut.value,
-      gpt: gptShortcut.value
-    })
+    // window.electron.ipcRenderer.send('save-shortcuts', {
+    //   translate: translateShortcut.value,
+    //   gpt: gptShortcut.value
+    // })
   }
 }
 
 const isValidShortcut = (shortcut: string): boolean => {
   const parts = shortcut.split('+')
-  return parts.length >= 2 &&
-    ['Ctrl', 'Alt', 'Shift', 'Meta'].some(mod => parts.includes(mod))
+  return parts.length >= 2 && ['Ctrl', 'Alt', 'Shift', 'Meta'].some((mod) => parts.includes(mod))
 }
 
-onMounted(async () => {
-  try {
-    const shortcuts = await window.electron.ipcRenderer.invoke('get-shortcuts')
-    if (shortcuts) {
-      translateShortcut.value = shortcuts.translate || 'Alt+1'
-      gptShortcut.value = shortcuts.gpt || 'Alt+2'
-    }
-  } catch (error) {
-    console.error('获取快捷键设置失败:', error)
-  }
-})
+onMounted(async () => {})
 
 const goBack = () => {
   router.push('/')
