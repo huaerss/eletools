@@ -1,6 +1,6 @@
 {
   "LoadURL": "https://gyh.one",
-  "requestUrl": "https://api.aliyy.cc/v1/chat/completions",
-  "requestToken": "Bearer sk-rjNhduuzVzpoEkVRxUnoRMDWbBWigRWu",
-  "requestModel": "gpt-4o"
+  "requestUrl": "*",
+  "requestToken": "Bearer *",
+  "requestModel": "gemini-1.5-pro-latest"
 }

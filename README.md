@@ -1,33 +1,44 @@
-# eletools 一个electorn实现的翻译工具
+# EleTools - Electron 翻译工具
 
-## Recommended IDE Setup
+## 功能介绍
 
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin)
+### 文本翻译
 
-## 1.产品功能
+快捷键 `Alt + 1` 翻译选中内容
 
-### 快速进行翻译以及搜索 通过deeplx 实现中文转英文 其他语言转中文 通过gpt-4O 实现选中内容的回复
+![翻译功能](/images/image.png)
 
-## 通过alt + . 开启openai 镜像网站方便问答 需要自备Token
+### AI 搜索
 
-## 兼容高版本的electron框架 兼容MacOS 以及Windows 可自行编译
+快捷键 `Alt + 2` 对选中内容进行 AI 搜索
 
-### node - v = 18.16.0
+![AI搜索](/images/image2.png)
 
-## 2.具体使用方法
+### OpenAI 问答
 
-### 1.左键选中内容
+快捷键 `Alt + .` 打开 OpenAI 镜像站点（需要申请账号） 或将配置文件中的 `LoadURL` 修改为 你的镜像站点地址
 
-### 2.右键长按0.2s左右
+## 配置方法
 
-### 3.eletools中红线上面显示翻译deeplx内容 下面显示gpt-4O搜寻到的内容
+创建 `config.json` 文件，可放置于：
 
-## 3.使用效果
+- 项目根目录
+- 打包后路径：`包的根/resources/app.asar.unpacked/resources/config.json`
 
-翻译文档时 会给出翻译结果以及 AI回复的结果进行参考
+配置文件内容如下：
 
-![alt text](./README.assets/image.png)
+```json
+{
+  "LoadURL": "OpenAI镜像站点地址",
+  "requestUrl": "AI接口地址",
+  "requestToken": "AI接口Token",
+  "requestModel": "AI模型名称"
+}
+```
 
-### 并且支持MD格式输出
+:::tip
 
-![alt text](./README.assets/image2.png)
+`requestUrl` 和 `requestToken` 为必填项
+修改后需要重启应用
+
+:::
